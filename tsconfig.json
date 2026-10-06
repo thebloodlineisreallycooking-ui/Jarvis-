@@ -3,7 +3,7 @@
     "target": "ES2022", "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext", "moduleResolution": "Bundler", "jsx": "react-jsx",
     "strict": true, "noUncheckedIndexedAccess": true, "exactOptionalPropertyTypes": true,
-    "esModuleInterop": true, "skipLibCheck": true, "types": ["node", "vitest/globals"]
+    "esModuleInterop": true, "skipLibCheck": true, "types": ["node"]
   },
-  "include": ["server", "shared", "web", "tests", "vite.config.ts"]
+  "include": ["server", "shared", "web", "vite.config.ts"]
 }
