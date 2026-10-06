@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: jarvis-private
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /var/data/jarvis.db
+      - key: JARVIS_OWNER_USERNAME
+        sync: false
+      - key: JARVIS_OWNER_PASSWORD
+        sync: false
+    disk:
+      name: jarvis-data
+      mountPath: /var/data
+      sizeGB: 1
