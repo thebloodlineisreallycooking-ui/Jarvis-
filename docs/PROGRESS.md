@@ -26,3 +26,22 @@
   settings change, restart, resource creation or production DB access performed.
 - Frontend corrections and final verification are in progress. No new assistant,
   provider, voice, desktop or task-editing capabilities are included.
+
+## Checkpoint 2 — client boundaries
+
+- Checkpoint 1 is saved on GitHub as
+  `6398df475760d98043ad6885e440555fe18df724`; its tree matches the locally
+  verified changes. Git CLI push lacks credentials, so the authorized GitHub
+  connector saves commits and advances only the work branch with a head check.
+- Structured API errors distinguish 401, 403, network errors and 5xx. Initial
+  failures have retry UI; existing content/drafts survive temporary errors.
+- A session-scoped in-memory controller separates Live and Demo data/drafts,
+  captures request mode, invalidates late responses, and clears private state
+  only on confirmed logout/session expiry. Failed logout is explicit.
+- UI reports loading/saving/error states and exposes sign-out on mobile.
+  Targeted type/touch/focus/scroll fixes preserve the three-view identity.
+  Reduced motion covers pseudoelements; hidden documents pause animation.
+- Local checks: typecheck and 29 tests passed; visual review is still pending.
+- Render is now connected but has no selected workspace. The connector requires
+  user confirmation of the listed `My Workspace` before service reads; no
+  production information or database has been accessed.
