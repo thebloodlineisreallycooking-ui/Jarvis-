@@ -3,8 +3,10 @@
 ## Current scope — Etapp 1: stable foundation
 
 Updated 14 October 2026. The requested source corrections are implemented and
-locally verified. Active Render inspection and physical Safari verification
-remain separate, explicitly unverified items. No next-stage capabilities added.
+locally verified. Read-only Render service/deploy inspection is now complete;
+log/environment access gaps, production recovery readiness and physical Safari
+verification remain. Release is not yet approved or ready. No next-stage
+capabilities added.
 
 ## Verified source and GitHub delivery
 
@@ -35,6 +37,10 @@ remain separate, explicitly unverified items. No next-stage capabilities added.
 - Final delivery check normalizes the browser review output guard so it also
   rejects paths inside a repository directory with a trailing slash. An explicit
   in-repository output attempt was rejected before artifacts/server creation.
+- Follow-up on the same branch/PR adds `docs/RENDER_OPERATIONS_REVIEW.md`, updates
+  setup/requirement status, and adds `scripts/verify-recovery.mjs`. Application
+  code remains at the previously verified revision `56978a89...`. This durable
+  checkpoint records observed Render data and an explicit no-go release decision.
 
 ## Verified local behavior
 
@@ -69,25 +75,41 @@ remain separate, explicitly unverified items. No next-stage capabilities added.
 - WebKit could not run because required system libraries were missing and this
   execution environment denied their installation. No physical iPhone/iPad
   Safari keyboard, safe-area or OS background behavior is claimed as tested.
+- Recovery rehearsal passed against actual old source at `a21a3a9...`: native
+  backup of an open WAL database, exact five-table preservation, migration/reopen,
+  old-server Live failure despite successful health, immutable backup checksum,
+  coordinated offline restore, restored old-code writes and account isolation.
+  Only synthetic temporary data; the exercise also proves loss of post-backup
+  changes when restoring to the earlier point.
 
 ## Actually observed hosting status
 
 - The user has previously opened the app on Render. Old claims that hosting had
   never been created were removed.
-- The Render connector is available. It listed **My Workspace** but requires the
-  user to confirm the workspace before service reads. That selection is not yet
-  confirmed, so no service/repository match, active branch/SHA, build/start
-  commands, health check, mounted disk or deploy logs were observed here.
-- Repository Blueprint expectations are recorded in `docs/SETUP.md`. The only
-  Blueprint change is the explicit build command. No active-dashboard mismatch
-  is asserted without reading it.
+- The user confirmed **My Workspace**. Read-only service metadata matched
+  `srv-db1vle3bc2fs73em1t30` (`jarvis-private`) to the exact GitHub repository.
+  Active branch is main; live commit is `a21a3a9b4877ce31afc8eec28ae5557854f01b01`.
+  Deploy `dep-db2k2kmi0phs738s20k0` finished successfully on 6 October 18:44:34 UTC.
+- Active build/start/health/region/plan/disk match PR #7. Auto-deploy is on commit.
+  The dashboard already has `npm ci --include=dev && npm run build`; main's
+  Blueprint omits it, and the PR codifies it. No active setting fix is proposed.
+- Events show two earlier exit-127 deploy failures after successful builds,
+  followed by success after a build-command change. Historical and recent log
+  queries returned zero rows, so exact historical root cause is unverified.
+- Active environment values, disk free space and backup availability are not
+  exposed by the connector's read tools. Dashboard fallback reached sign-in.
+  Actual DATABASE_PATH still needs non-secret confirmation. No new successful
+  HTTP health/in-app production test is claimed from the Render `live` status.
 - No production deploy, restart, merge, settings/secret/owner change, resource
   creation or database read/download/write was performed.
 
 ## Review handoff
 
-Open PR #7 and `docs/ETAPP_1_REPORT.md`. Confirm **My Workspace** for read-only
-Render inspection, then compare the existing service with the exact proposed
-configuration. Keep the PR unmerged until release review: the existing Blueprint
-may auto-deploy when main changes. Physical Safari checks remain for an approved
-release. Etapp 2 is not started.
+Open PR #7 and `docs/RENDER_OPERATIONS_REVIEW.md`. Keep the draft unmerged:
+release still needs actual DB-path/runtime confirmation, a consistent native
+backup and an operator-tested Render stop/restore path before schema migration.
+The report specifies a write freeze, backup verification/export, coordinated
+data/code recovery and loss of post-backup changes. No production backup was
+created or database downloaded. Historical log details and physical Safari
+checks remain explicit gaps. Any production setting/maintenance/release action
+needs a separate decision. Etapp 2 is not started.

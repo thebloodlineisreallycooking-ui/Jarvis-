@@ -44,10 +44,12 @@ The existing dark three-view interface and task-capture functionality remain.
 | `tests/workspace.test.ts` | HTTP errors, session cleanup, mode separation, request races and pending/error states |
 | `scripts/verify-production.mjs` | Reproducible isolated production install/build/start/restart verification |
 | `scripts/verify-browser.mjs` | Reproducible local HTTPS browser review with synthetic content |
+| `scripts/verify-recovery.mjs` | Isolated WAL backup, migration and old-code recovery rehearsal |
 | `README.md` | Current capability and existing-deployment description |
 | `docs/SETUP.md` | Existing Render-service comparison, mobile handoff and verification commands |
 | `docs/PROGRESS.md` | Separate local, GitHub and Render status |
 | `docs/ETAPP_1_REPORT.md` | This requirement-by-requirement report |
+| `docs/RENDER_OPERATIONS_REVIEW.md` | Observed Render/PR comparison, recovery runbook and release blockers |
 
 Files such as `server/index.ts`, `server/db/database.ts`, the TypeScript/Vite/
 Vitest configs and `tests/phase-a.test.ts` were inspected and retained. No
@@ -62,13 +64,15 @@ explicitly describes GitHub. It does not imply production deployment.
 | --- | --- | --- |
 | Current main, branch, commit, open PRs and AGENTS.md | Klart | Complete single-commit clone, separate branch, inspected instructions and all requested files |
 | GitHub read/write and real PR checked separately | Klart | Connector reads, branch/tree/commit/ref writes and PR #7 each confirmed |
-| Render service linked to the correct repo | Blockerat | Connector requires user confirmation of `My Workspace`; service not read yet |
-| Render active branch/SHA/build/start/health/disk/logs | Blockerat | Same workspace-selection requirement; no values inferred from old docs |
+| Render service linked to the correct repo | Klart | User confirmed My Workspace; service srv-db1vle3bc2fs73em1t30 matches the exact repo URL |
+| Render active branch/SHA/build/start/health/disk | Klart | main at a21a3a9; live deploy from 6 October; configuration matches PR #7 |
+| Render historical deploy logs | Blockerat | Log queries return zero rows; Events confirm success and earlier exit codes, not root cause |
+| Render active database path | Blockerat | Connector lacks environment-value reads; dashboard fallback requires sign-in; preserve /var/data/jarvis.db |
 | Production DB not downloaded or tested | Klart | Only disposable local SQLite paths and generated test-owner credentials used |
 | A: explicit production build and npm start | Klart | Blueprint build command and clean production verification |
 | A: tsx available at actual server start | Klart | Runtime dependency; `node --import tsx` starts after dev dependencies are pruned |
 | A: service/region/health/disk/path/secrets preserved | Redan korrekt | Existing repository settings retained; only build command added to Blueprint |
-| A: dashboard/Blueprint difference | Blockerat | Expected values and exact conditional correction documented; active values not observed |
+| A: dashboard/Blueprint difference | Klart | Dashboard already has the build command absent from main; PR codifies it. No active build/start/health/disk correction proposed |
 | B: structured error and 401 session semantics | Klart | ApiError retains HTTP status; 401 clears immediately even with another request pending |
 | B: network/5xx with retry | Klart | Initial unavailable screen or retained authenticated content with retry; no automatic command repost |
 | B: 403 permission failure | Klart | Access-denied state; no logout |
@@ -80,6 +84,8 @@ explicitly describes GitHub. It does not imply production deployment.
 | C: forward migration preserves existing messages | Klart | Legacy fixture checks every saved field and repeat startup |
 | C: historical uncertainty documented | Klart | Timestamp then stored row order establishes a baseline; no inferred legacy pairs |
 | C: exact current command pair returned | Klart | Transaction returns its own generated messages; future-dated historical row regression |
+| C: backup/rollback compatibility rehearsal | Klart | Synthetic WAL backup and restore; actual old server fails Live on schema 2, works again after coordinated restore |
+| C: production recovery readiness | Blockerat | No production backup or verified Render process-stop/restore path; explicit release gate in operations review |
 | D: database Live/Demo boundary | Redan korrekt | Demo return precedes writes; Live-only table constraint retained and tested |
 | D: client Live/Demo separation and labels | Klart | Separate lists and drafts; matching mode in history, task panel and request state |
 | D: Demo never increases persistent tasks | Klart | DB snapshots/sequence unchanged by repeated Demo commands; browser count check |
@@ -127,27 +133,36 @@ explicitly describes GitHub. It does not imply production deployment.
   logout, 401, mode changes, focus, reduced motion and simulated visibility.
 - Browser screenshots/results are outside the repository. They are verification
   artifacts, not source files or evidence of a real iPhone test.
+- Recovery rehearsal: `node --import tsx scripts/verify-recovery.mjs` passed
+  against actual baseline source. Consistent WAL backup, preserved rows/hash,
+  migration/reopen, old server's healthy-but-unwritable state, offline restore,
+  account isolation and post-backup data-loss boundary were checked locally.
 
 ## Operational limits and next action
 
-No active Render difference can be reported until the connector's workspace
-selection requirement is satisfied. Confirm **My Workspace** to allow read-only
-inspection of the service linked to this repo; then compare the non-secret
-settings and deploy SHA/logs with `docs/SETUP.md`. The user may instead provide
-that existing service's dashboard URL and non-secret log lines/settings.
+**Not ready for production release.** The user confirmed My Workspace and the
+existing service was inspected read-only. Active main commit is the PR's base,
+with a successful live deploy from 6 October. Build/start/health/auto-deploy/disk
+match the PR. The current dashboard build command was already correct; the PR
+adds it to the Blueprint. No active configuration correction is needed for those
+fields. Full evidence and exact remaining gates are in
+[the operations review](RENDER_OPERATIONS_REVIEW.md).
 
-The production proposal is conditional: use build command
-`npm ci --include=dev && npm run build`, keep start command `npm start`, retain
-existing region/health/disk/path/owner secrets. Do not create another resource.
-The draft PR should remain unmerged while deployment review is incomplete;
-merging may trigger the existing auto-deploy behavior.
+Log queries returned no rows. Events identify earlier exit 127 deployments and
+later success after a build-command change; the precise historical cause remains
+unverified. Active DATABASE_PATH, runtime capacity, backup and Render recovery
+access still require verification. Dashboard fallback requires separate sign-in.
 
-Migration 2 preserves data but changes the message schema. Old source code's
-positional INSERT is incompatible with the extra column. A rollback requires a
-reviewed forward correction or coordinated DB recovery, not just reverting code.
-Unknown legacy task status remains an explicit error. Lost command responses are
-not automatically reposted: refresh Live data before retrying to avoid duplicates.
+Migration 2 is incompatible with old positional message INSERTs, even while
+health reports 200. Use the documented native SQLite backup under a write freeze,
+then a reviewed forward fix or coordinated offline data/code restoration. A
+Render code rollback does not restore the disk. The production backup and
+process-stop/restore procedure have not been executed; release remains blocked.
+Unknown legacy task status remains an explicit error. Refresh Live data before
+retrying a command whose response was lost, because automatic deduplication is
+outside this stage.
 
-On mobile: open PR #7 → **Files changed**, review this report, confirm the Render
-workspace, then perform the physical Safari checks described in setup after a
-separately approved release. No merge or production action has been taken here.
+On mobile: review PR #7 and the operations report, confirm only non-secret
+database-path/log details, arrange the backup/recovery gate, then explicitly
+approve any later release. Physical Safari checks remain. No merge, production
+mutation or Etapp 2 work has been performed.
