@@ -12,7 +12,7 @@ import { startTestServer } from './verify-production.mjs';
 // externally and set PLAYWRIGHT_MODULE to its index.js when it is not resolvable.
 const require = createRequire(import.meta.url);
 const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const root = fileURLToPath(new URL('..', import.meta.url));
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const output = resolve(process.env.JARVIS_REVIEW_OUTPUT || '/tmp/jarvis-etapp-1-review');
 assert.ok(!output.startsWith(`${root}/`) && output !== root, 'Keep screenshots and reports outside the repository');
 await mkdir(output, { recursive: true });

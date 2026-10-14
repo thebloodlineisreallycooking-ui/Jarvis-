@@ -32,6 +32,9 @@ remain separate, explicitly unverified items. No next-stage capabilities added.
   and commits and advances only the work branch using an expected-head check.
   Each delivered tree is compared with the local commit before completion.
   The final response reports the actual verified PR head.
+- Final delivery check normalizes the browser review output guard so it also
+  rejects paths inside a repository directory with a trailing slash. An explicit
+  in-repository output attempt was rejected before artifacts/server creation.
 
 ## Verified local behavior
 
