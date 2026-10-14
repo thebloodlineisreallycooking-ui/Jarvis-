@@ -30,7 +30,9 @@ export function createApp(db:Database.Database){const app=express(); app.disable
    for(const message of messages) insert.run(message.id,res.locals.accountId,message.role,message.text,'live',message.createdAt);
    return {task,persisted:true,messages};
  });res.status(201).json(save());});
- app.use((_error:unknown,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
+ app.use((error:unknown,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
+   const status=typeof error==='object' && error!==null && 'status' in error ? error.status : undefined;
+   if(status===400 || status===413) {res.status(status).json({error:status===400?'Invalid JSON request.':'Request is too large.'});return;}
    res.status(500).json({error:'The server could not complete the request. Please try again.'});
  });
  return app;}

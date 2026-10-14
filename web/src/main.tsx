@@ -38,17 +38,23 @@ function useLoginState() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => pending.current?.abort(), []);
 
   const signIn = async (onSuccess: () => void) => {
+    if (pending.current) return;
+    const controller = new AbortController();
+    pending.current = controller;
     setBusy(true);
     setError('');
     try {
-      await api('/auth/login', { method: 'POST', body: JSON.stringify(form) });
-      onSuccess();
+      await api('/auth/login', { method: 'POST', body: JSON.stringify(form), signal: controller.signal });
+      if (!controller.signal.aborted) onSuccess();
     } catch (reason) {
-      setError(reason instanceof ApiError && reason.status === 401 ? 'Username or password is incorrect.' : (reason as Error).message);
+      if (!controller.signal.aborted) setError(reason instanceof ApiError && reason.status === 401 ? 'Username or password is incorrect.' : (reason as Error).message);
     } finally {
-      setBusy(false);
+      pending.current = null;
+      if (!controller.signal.aborted) setBusy(false);
     }
   };
 

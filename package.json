@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "tsc -p tsconfig.test.json --noEmit && vitest run --config vitest.config.ts",
-    "start": "NODE_ENV=production tsx server/index.ts"
+    "start": "NODE_ENV=production node --import tsx server/index.ts"
   },
   "dependencies": {
     "better-sqlite3": "12.4.1",

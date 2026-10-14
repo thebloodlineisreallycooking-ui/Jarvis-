@@ -95,6 +95,17 @@ describe('Session and execution boundaries', () => {
     await workspace.load();
     expectCleared(workspace);
   });
+  it('clears a confirmed 401 immediately while the other endpoint is still pending', async () => {
+    const { workspace, request } = await populate();
+    const stalled = deferred<{ messages: CommandResponse['messages'] }>();
+    request.mockRejectedValueOnce(new ApiError('ended', 401, 'session')).mockImplementationOnce(() => stalled.promise);
+    const loading = workspace.load();
+    await Promise.resolve();
+    expectCleared(workspace);
+    stalled.resolve({ messages: result('live').messages });
+    await loading;
+    expectCleared(workspace);
+  });
   it('keeps a successful login when its initial content fetch fails', async () => {
     const { workspace, request } = setup();
     request.mockRejectedValueOnce(new ApiError('down', 503, 'server'));

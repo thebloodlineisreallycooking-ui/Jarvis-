@@ -29,6 +29,11 @@ async function account(app: ReturnType<typeof createApp>, username: string) {
 }
 
 describe('Stable message persistence', () => {
+  it('preserves client error status for invalid or oversized request JSON', async () => {
+    const { app } = setup();
+    await request(app).post('/api/auth/login').set('Content-Type', 'application/json').send('{broken').expect(400);
+    await request(app).post('/api/auth/login').send({ data: 'x'.repeat(34000) }).expect(413);
+  });
   it('returns the exact command pair at identical timestamps and preserves order after restart', async () => {
     const { db, path, app } = setup();
     const alice = await account(app, 'alice');

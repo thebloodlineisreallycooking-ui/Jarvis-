@@ -1,47 +1,90 @@
 # Progress
 
-## Etapp 1 — stable foundation (2026-10-13)
+## Current scope — Etapp 1: stable foundation
 
-- Source: full git clone of `thebloodlineisreallycooking-ui/Jarvis-`, based on
-  `main` commit `a21a3a9b4877ce31afc8eec28ae5557854f01b01` (merged PR #6).
-- Work branch: `codex/etapp-1-stabil-grund`; creation independently verified on
-  GitHub. Open PRs #4 and #5 are older hosting variants; neither is the baseline.
-- Baseline local checks: typecheck, all 3 existing tests and production frontend
-  build passed. The reported state/ordering/build configuration problems were
-  confirmed against this source, rather than assumed from older status notes.
-- Checkpoint 1: explicit Render build command; `tsx` is a runtime dependency;
-  forward migration 2 introduces durable message sequences and validates new
-  task status writes; command responses return their own saved message pair.
-- Checkpoint 1 local checks: typecheck, 7 tests and diff whitespace validation
-  passed. Tests cover tied timestamps, exact responses, migration/reopen,
-  account isolation, Demo writes and invalid stored status.
-- Legacy ordering: migration uses `created_at`, then existing SQLite `rowid`
-  for ties. It preserves every row and fixes that order permanently; it cannot
-  prove the original chronology of historical ties and does not infer pairs.
-- Task contract currently permits only `open`. Unknown legacy statuses are
-  retained and surface a server error; they are never silently converted.
-- Render observation: the user has previously opened this app on Render.
-  This session has no connected Render access yet; active service/repo mapping,
-  deployed commit, settings, disk and logs are not observed. No deployment,
-  settings change, restart, resource creation or production DB access performed.
-- Frontend corrections and final verification are in progress. No new assistant,
-  provider, voice, desktop or task-editing capabilities are included.
+Updated 14 October 2026. The requested source corrections are implemented and
+locally verified. Active Render inspection and physical Safari verification
+remain separate, explicitly unverified items. No next-stage capabilities added.
 
-## Checkpoint 2 — client boundaries
+## Verified source and GitHub delivery
 
-- Checkpoint 1 is saved on GitHub as
-  `6398df475760d98043ad6885e440555fe18df724`; its tree matches the locally
-  verified changes. Git CLI push lacks credentials, so the authorized GitHub
-  connector saves commits and advances only the work branch with a head check.
-- Structured API errors distinguish 401, 403, network errors and 5xx. Initial
-  failures have retry UI; existing content/drafts survive temporary errors.
-- A session-scoped in-memory controller separates Live and Demo data/drafts,
-  captures request mode, invalidates late responses, and clears private state
-  only on confirmed logout/session expiry. Failed logout is explicit.
-- UI reports loading/saving/error states and exposes sign-out on mobile.
-  Targeted type/touch/focus/scroll fixes preserve the three-view identity.
-  Reduced motion covers pseudoelements; hidden documents pause animation.
-- Local checks: typecheck and 29 tests passed; visual review is still pending.
-- Render is now connected but has no selected workspace. The connector requires
-  user confirmation of the listed `My Workspace` before service reads; no
-  production information or database has been accessed.
+- Full git clone based on `main` commit
+  `a21a3a9b4877ce31afc8eec28ae5557854f01b01` (merged PR #6).
+  GitHub and local refs matched; `main` was unchanged when rechecked on 14 October.
+- Separate work branch: `codex/etapp-1-stabil-grund`.
+- Existing PRs #4 and #5 were inspected as older hosting variants, not used as
+  the baseline. All requested files and `AGENTS.md` were read.
+- Verified GitHub checkpoint 1:
+  `6398df475760d98043ad6885e440555fe18df724` — deployment configuration,
+  message-order migration and exact command responses; 7 tests at that checkpoint.
+- Verified GitHub checkpoint 2:
+  `fbf4c261e67b27b8f28266f31ac2c23fe29768a3` — sessions, separate Live/Demo
+  state, accessibility fixes and 29 tests at that checkpoint.
+- Real draft [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7)
+  was created on 14 October. A previous attempt was not executed because the
+  automatic approval reviewer hit a usage limit; the same connector succeeded
+  after that limit cleared. Nothing was merged.
+- This final checkpoint adds the direct Node/tsx production start, immediate 401
+  cleanup when another fetch is still pending, guarded login lifetime, preserved
+  malformed-request status codes, two more regression tests, reproducible local
+  verification scripts and complete handoff documentation.
+- Git CLI push has no credentials. The authorized GitHub connector saves trees
+  and commits and advances only the work branch using an expected-head check.
+  Each delivered tree is compared with the local commit before completion.
+  The final response reports the actual verified PR head.
+
+## Verified local behavior
+
+- Current command parser supports task capture in English and Swedish. Owner
+  login, Secure/HttpOnly sessions, production registration lockout, account
+  isolation and the existing technical Live/Demo database boundary remain.
+- API failures carry HTTP status. Only confirmed 401 ends the session; 403,
+  network and 5xx errors have explicit error/retry states. Temporary fetch errors
+  preserve loaded data/drafts, and initial failures do not claim the user logged out.
+- Live/Demo tasks, messages and drafts are separate in-memory state. Requests
+  remain tied to their originating mode. Logout/expiry clear private state and
+  invalidate late success/error responses. Failed logout stays visibly unconfirmed.
+- Migration 2 adds a durable message sequence. New user/reply pairs are saved in
+  one transaction and returned directly. Legacy rows are preserved and ordered by
+  timestamp then existing row order; uncertain historical ties are not invented.
+- Task mapping validates the stored status against the existing `open` contract.
+  Unknown legacy status is retained and exposed as an error, not relabeled.
+- The three existing views and visual identity remain. Important text, input
+  size, touch targets, focus, error/pending states and short-height scrolling are
+  corrected. Reduced motion covers pseudoelements and hidden documents pause
+  decorative animations.
+- Final local gates: typecheck, **31 tests** across 3 files, production build and
+  `git diff --check` passed. The original source had 3 tests, which also passed.
+- Production verifier passed clean install/build with `NODE_ENV=production`,
+  removal of dev dependencies, real npm start, login/cookies, Live save, process
+  restart, ordered message retention, Demo isolation and logout. Temporary test
+  credentials and databases only; no production data accessed.
+- Chromium desktop emulation covered 390/430/820px, all three views empty/filled,
+  long history, errors, focus, 200% root font, 360px available height, reduced
+  motion, simulated visibility and Live/Demo/401/logout behavior. Screenshots
+  were reviewed outside source control. See the full report for scope/limits.
+- WebKit could not run because required system libraries were missing and this
+  execution environment denied their installation. No physical iPhone/iPad
+  Safari keyboard, safe-area or OS background behavior is claimed as tested.
+
+## Actually observed hosting status
+
+- The user has previously opened the app on Render. Old claims that hosting had
+  never been created were removed.
+- The Render connector is available. It listed **My Workspace** but requires the
+  user to confirm the workspace before service reads. That selection is not yet
+  confirmed, so no service/repository match, active branch/SHA, build/start
+  commands, health check, mounted disk or deploy logs were observed here.
+- Repository Blueprint expectations are recorded in `docs/SETUP.md`. The only
+  Blueprint change is the explicit build command. No active-dashboard mismatch
+  is asserted without reading it.
+- No production deploy, restart, merge, settings/secret/owner change, resource
+  creation or database read/download/write was performed.
+
+## Review handoff
+
+Open PR #7 and `docs/ETAPP_1_REPORT.md`. Confirm **My Workspace** for read-only
+Render inspection, then compare the existing service with the exact proposed
+configuration. Keep the PR unmerged until release review: the existing Blueprint
+may auto-deploy when main changes. Physical Safari checks remain for an approved
+release. Etapp 2 is not started.

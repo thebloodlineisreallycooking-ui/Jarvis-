@@ -70,15 +70,19 @@ export class Workspace {
   load = async () => {
     if (this.state.busy === 'command' || this.state.busy === 'logout') return;
     const { generation, signal } = this.begin('load');
-    // allSettled ensures a 401 from either endpoint wins over a simultaneous 5xx.
+    // Clear immediately on a confirmed 401, even if the other endpoint hangs.
+    // allSettled still lets us distinguish non-session failures without losing
+    // either rejection or discarding previously loaded content.
+    const get = <T>(path: string) => this.request<T>(path, { signal }).catch(reason => {
+      if (generation === this.generation && reason instanceof ApiError && reason.status === 401) this.endSession(true);
+      throw reason;
+    });
     const results = await Promise.allSettled([
-      this.request<{ tasks: Task[] }>('/tasks', { signal }),
-      this.request<{ messages: Message[] }>('/messages', { signal }),
+      get<{ tasks: Task[] }>('/tasks'),
+      get<{ messages: Message[] }>('/messages'),
     ]);
     if (generation !== this.generation) return;
     const failures = results.filter(result => result.status === 'rejected');
-    const expired = failures.find(result => result.reason instanceof ApiError && result.reason.status === 401);
-    if (expired) { this.endSession(true); return; }
     const [tasks, messages] = results;
     if (tasks.status === 'fulfilled' && messages.status === 'fulfilled') {
       this.update({ session: 'authenticated', live: { tasks: tasks.value.tasks, messages: messages.value.messages }, notice: '' });
