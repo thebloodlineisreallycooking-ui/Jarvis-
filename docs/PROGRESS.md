@@ -113,3 +113,40 @@ data/code recovery and loss of post-backup changes. No production backup was
 created or database downloaded. Historical log details and physical Safari
 checks remain explicit gaps. Any production setting/maintenance/release action
 needs a separate decision. Etapp 2 is not started.
+
+
+## Release preparation checkpoint — 14 October 2026
+
+- Added runtime-only operations in `scripts/ops/`: a maintenance HTTP listener
+  that never imports the app or migrations, authenticated loopback control,
+  native SQLite backup/verification and resumable offline restoration. The
+  production entry points are fixed to the existing service and database path.
+  No operations tool has been installed or run on Render.
+- Reused and extended `scripts/verify-recovery.mjs` with the same synthetic
+  baseline exercise. It now calls the actual operations implementation, rejects
+  an open database, wrong service/owner, damaged backups and invalid IDs, and
+  checks maintenance-only responses and private control authentication.
+  Interrupted restore after quarantine (including committed WAL/SHM) and after
+  atomic installation both resume successfully without starting the app.
+- Focused recovery verification and JavaScript syntax/diff checks pass. The
+  previous 31-test/application/build/browser evidence remains valid; no full
+  application suite was repeated for these independent operations scripts.
+  The executor restricts inspection of other processes' `/proc` entries: the
+  local process-guard fixture uses the real test process's descriptors. The
+  production command still inspects all same-user processes and fails closed
+  if it lacks permission. Its actual Render permission check remains a gate
+  before backup/migration, not an assertion that runtime access was tested.
+- Read-only service metadata was rechecked and is unchanged. The supported
+  browser authentication flow offered Google; after the user's choice it
+  encountered `502 / Connection refused`. No authenticated Render dashboard
+  session was verified. Active DATABASE_PATH, Node and free space still need
+  a single read-only Shell command; no secrets or DB contents are requested.
+- The user supplied historical lines `Empty build command; skipping build`
+  followed by `tsx: not found`. This is user-provided evidence, not recovered
+  connector output. Missing old connector logs are not a release blocker.
+- Physical Safari verification belongs after a separately approved deployment,
+  since this PR has no mobile-accessible preview. No paid preview is proposed.
+- A pinned, executable release runbook follows in the documentation checkpoint.
+  It specifies the existing service, commit-guarded start commands, an owner-only
+  iPad backup target through SSH/SFTP, release checks and the exact rollback.
+  Backup/settings/merge/deploy remain unapproved and unperformed.
