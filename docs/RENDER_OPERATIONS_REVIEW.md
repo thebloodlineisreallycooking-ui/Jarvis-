@@ -1,16 +1,22 @@
 # Etapp 1 — Render-granskning och återställningsplan
 
-Granskad 14 oktober 2026, cirka 10:10–10:20 UTC (12:10–12:20 svensk tid).
+Granskad 14 oktober 2026, kompletterad med inloggad runtimekontroll 15 oktober.
 Avser [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7)
 på `codex/etapp-1-stabil-grund`. Jämförd applikationsrevision:
-`56978a89e9bffefc4b863ceafdc0a331ec8f3799`. Denna uppföljning ändrar
-dokumentation och lägger till en lokal återställningsövning, inte applikationen.
+`56978a89e9bffefc4b863ceafdc0a331ec8f3799`. Den första uppföljningen lade till dokumentation och en lokal återställningsövning.
+Den senaste tillför körbara driftverktyg i `scripts/ops/`, fortfarande utan
+ändring av applikationskoden. Föreslagen release-/kitcommit är
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`.
 
-**Releasebesked: INTE REDO FÖR PRODUKTIONSRELEASE ÄNNU.**
-Bygg-/startinställningarna är redan rätt och den lokala återställningsövningen
-passerar. Produktionsbackup, verifierad återställningsåtkomst och kontroll av
-verklig databasplacering saknas fortfarande. Se de konkreta grindarna nedan.
-PR:n förblir ett utkast. Inget har mergats, driftsatts eller ändrats i Render.
+**Releasebesked: FÖRBEREDELSERNA ÄR KODADE OCH LOKALT VERIFIERADE;
+PRODUKTIONSRELEASE FÅR INTE STARTAS ÄNNU.** Aktiv DB-path, Node-version och
+fritt utrymme är verifierade. Kvar är Blueprintens Auto Sync-värde,
+processinspektionens åtkomst samt SSH/SFTP och det privata iPad-målet.
+Därefter krävs ett separat beslut om backup/inställningar/merge/deploy.
+Den körbara, commit-låsta [releaseplanen](RELEASE_RUNBOOK.md) anger hela ordningen,
+underhållsstart, backup, verifiering, avbrott och exakt återställning. Historisk
+loggretention och fysisk Safari är inte förhandsblockerare. Safari sker efter
+godkänd deployment. PR:n är fortfarande ett utkast; produktion är oförändrad.
 
 ## Observerad tjänst och jämförelse
 
@@ -32,12 +38,16 @@ för drifthistoriken. Alla angivna tider i tabellerna är UTC.
 | Vad npm start kör | Bascommit: `NODE_ENV=production tsx server/index.ts` | PR: `NODE_ENV=production node --import tsx server/index.ts`; `tsx` flyttas till runtime-beroenden |
 | Healthcheck | `/api/health` | Matchar; kontrollerar endast `SELECT 1`, inte meddelandeskrivning |
 | Auto-deploy | `yes`, trigger `commit` | Matchar `autoDeployTrigger: commit`; framtida main-merge kan starta release |
+| Blueprint | `exs-db1vjsu7bikc73bt8gdg`, koppling synlig i inloggad dashboard | Auto Sync-värdet ännu inte avläst; måste låsas under releasefönstret |
 | Region / plan / runtime | `frankfurt` / `starter` / `node` | Matchar; ska bevaras |
 | Disk | `jarvis-data`, `dsk-db1vlebbc2fs73em1tmg`, 1 GB, `/var/data` | Exakt matchning |
 | Instanser / underhåll | 1 instans; maintenance mode av; inte suspenderad | Befintligt driftläge; inget ändrat |
 | PR previews | Av | Ingen Render-preview av PR #7 har verifierats |
 | Root directory | Tom, repositoryroten | Förenligt med npm-scripts |
-| `DATABASE_PATH` | Aktivt miljövärde ej exponerat av anslutningens läsverktyg | Blueprint kräver `/var/data/jarvis.db`; diskmontering bevisar inte att appen använder den |
+| `DATABASE_PATH` | `/var/data/jarvis.db`, avläst i aktiv Shell 15 oktober | Matchar PR:n; inte härlett från diskmonteringen |
+| Faktisk Node | `v24.21.0`, avläst i samma Shell | Inom PR:ns `>=20.19 <25`; lokal appverifiering använde 24.19.0 |
+| Diskutrymme | `1003794432` byte ledigt; `/var/data` monterad | Cirka 1,00 GB; konservativt backupkrav `67503648` byte vid avläsningen |
+| DB/WAL/SHM storlek | `4096` / `61832` / `32768` byte, endast filmetadata | Inget innehåll läst; faktisk konsistens verifieras först vid godkänd backup |
 | `NODE_ENV`, ägarvariabler | Aktiva miljövärden ej lästa | Båda npm-startvarianterna sätter production. Befintliga ägarhemligheter ska behållas; inga värden har hämtats |
 
 [Tjänsten i Render](https://dashboard.render.com/web/srv-db1vle3bc2fs73em1t30).
@@ -63,14 +73,28 @@ Loggfrågor för 6 oktober 18:36–18:47 (build/app), hela 6 oktober utan
 typfilter samt 13 oktober till granskningstillfället returnerade **noll rader**,
 `hasMore=false`. Detta är inte bevis för felfri drift eller för en viss
 loggretention. Events bekräftar exitkoderna men inte vilken binär/orsak som
-gav 127. Ingen gammal felorsak har därför tillskrivits `tsx` som ett observerat faktum.
+gav 127. **Användartillhandahållet underlag:** användaren återgav den tidigare
+Render-loggens följd `Empty build command; skipping build` och `tsx: not found`.
+Det dokumenteras som användarens logguppgift, inte som rader återhämtade genom
+connectorn. Det stödjer den redan korrigerade build-/tsx-förklaringen. Att
+connectorn inte längre returnerar de gamla raderna blockerar inte release.
 
-Dashboardens kompletterande läsning nådde en inloggningssida. Anslutningen har
-inte läsverktyg för aktiva miljövariabler, ledigt diskutrymme eller tillgängliga
-backuper. Dessa uppgifter är fortfarande okontrollerade. Den externa
-hälsoläsningen kunde inte nå URL:en genom webbverktyget; `live` ovan är Render-
-metadata, inte ett nytt lyckat HTTP-/inloggningstest. Produktionsdatabasen har
-inte öppnats, kopierats eller laddats ned. Inga råloggar sparas i repositoryt.
+Connectorn saknar läsverktyg för runtimevärden. Det tidigare 502-hindret i
+browserAuth övervanns 15 oktober: användaren genomförde säker Google-inloggning
+och enhetsgodkännande, och rätt tjänsts inloggade Shell kunde läsas. På instans
+`6hxdk` verifierades service-ID, gammal SHA och runtimevärdena ovan med enbart
+filmetadata och utvalda icke-hemliga miljövärden. Inga ägarhemligheter lästes.
+
+Resultatet från en påbörjad extra `/proc`-åtkomstkontroll hann inte verifieras.
+Sessionen avslutades senare; en säker återinloggning gav timeout och en ny
+tjänstesida visade inloggning. Därför är processåtkomsten och Blueprintens
+Auto Sync-värde kvarstående läskontroller. Shell visade att SSH kräver en
+registrerad publik nyckel; någon fungerande SFTP-anslutning är inte verifierad.
+
+Den externa hälsoläsningen kunde inte nå URL:en genom webbverktyget; `live`
+ovan är Render-metadata, inte ett nytt lyckat JARVIS HTTP-/inloggningstest.
+Produktionsdatabasen har inte öppnats, kopierats eller laddats ned. Inga råloggar
+eller terminalbilder sparas i repositoryt.
 
 ## Varför kodrollback inte räcker
 
@@ -91,140 +115,70 @@ rollback-tillgänglighet. Se [Render Rollbacks](https://render.com/docs/rollback
 
 Två möjliga återhämtningsvägar måste skiljas åt: en granskad framåtriktad
 korrigering som förstår schema 2 och behåller nya data, eller gammal kod ihop
-med en verifierad backup från schema 1. Det finns ingen färdig automatisk
-produktionsåterställning i PR:n.
+med en verifierad backup från schema 1. PR:n har nu ett körbart underhålls- och återställningsverktyg, men det har inte
+installerats eller körts i produktion. Ingen automatisk produktionsåterställning
+aktiveras av att denna PR skapas eller mergas.
 
-## Backup före en separat godkänd release
+## Konkret körbar produktionsplan
 
-Följande är ett förslag för en behörig driftoperatör, **inte utförda åtgärder**.
-Ägaren behöver inte klistra in lösenord, tokens eller databasfiler i chatten.
+Den tidigare generella driftplanen har ersatts av
+[RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md), låst till kit-/releasecommit
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`. Den omfattar:
 
-1. Bestäm underhållsfönster, ansvarig operatör och tillåten återställningstid.
-   Registrera gammal commit/deploy ovan och exakt godkänd releasecommit.
-   Låt `main` vara oförändrad tills backupgrinden är klar. Förslaget är temporärt
-   **Auto-Deploy Off** under release/återställning, med kontrollerad Blueprint-
-   synk så att inställningen inte skrivs över. Bekräfta att inga deployer är köade.
-   Dessa produktionsändringar kräver ett senare, uttryckligt releasebeslut.
-2. Aktivera Render Maintenance Mode för att blockera offentlig trafik. Låt
-   pågående anrop avslutas och stoppa även interna anrop/manuella skrivningar.
-   Håll skrivstoppet genom backup, migration och acceptanskontroll. Underhållsläget
-   stoppar inte själva processen och blockerar inte privat nätverk eller SSH;
-   det är inte ensamt ett databaslås. Se [Maintenance Mode](https://render.com/docs/maintenance-mode).
-3. I den befintliga tjänstens runtime Shell/SSH: kontrollera utan att visa
-   hemligheter att `DATABASE_PATH` är `/var/data/jarvis.db`, att filen finns,
-   Node-versionen stöds och att diskens lediga utrymme räcker för backup,
-   migreringens nya meddelandetabell, index och WAL med marginal. Läs faktiskt
-   schemanummer och kontrollera integritet/foreign keys samt okända task-statusar.
-   Om schema inte är 1, konton inte motsvarar befintlig ägare eller kontrollen
-   fallerar: avbryt och utred utan att skriva om data eller ägaruppgifter.
-4. Skapa en unik privat katalog utanför webbroten, med katalogläge 0700 och
-   `umask 077`. Öppna källan med installerad `better-sqlite3` och
-   `{ readonly: true, fileMustExist: true }`. Använd **SQLite Online Backup API**
-   via `await db.backup(uniqueBackupPath)` och invänta lyckat resultat före close.
-   Importera inte `openDatabase`, migratorn eller den nya serverstarten för att
-   läsa källan: de kan migrera den. Bibliotekets runtime-beroende finns även i
-   den gamla revisionen. SQLite-backupen fångar även committed WAL-data.
-5. Öppna endast backupkopian separat, kör `PRAGMA integrity_check` (enbart `ok`),
-   `PRAGMA foreign_key_check` (inga rader), kontrollera schema 1 och jämför
-   tabellernas antal/nycklar under skrivstoppet. Normalisera **kopian** till
-   `journal_mode=DELETE`, stäng den och kontrollera att den är en fristående
-   databas utan nödvändig WAL. Beräkna SHA-256 på den stängda filen och notera
-   UTC-tid, bascommit, schema, storlek och kontrollresultat i privat driftjournal.
-   Inga kontouppgifter, sessionshashar eller uppgiftstexter ska publiceras.
-6. Behåll originalbackupen orörd. För över en verifierad kopia till en av ägaren
-   godkänd, krypterad plats utanför tjänstens disk; jämför checksumma efter
-   överföringen. Ange ansvarig, åtkomst och retention. En enda kopia på samma
-   disk skyddar inte mot diskförlust. Inget sådant exportmål har valts eller
-   någon överföring utförts i denna granskning.
-7. Repetera återställning/migration på en isolerad kopia i den godkända
-   driftmiljön, utan offentlig exponering. För denna granskning har motsvarande
-   flöde endast körts med syntetiska data lokalt. Kopian får inte återanvända
-   produktionsdatabasens sökväg eller logga dess privata innehåll.
+- Installation av tre SHA-256-verifierade källkodsfiler på befintliga disken.
+- Exakt tillfällig Start Command som endast kör `maintenance.mjs`. Appen och
+  migratorn importeras aldrig; en omstart återgår till samma underhåll.
+- Privat autentiserad loopback-kontroll, process-/filkontroller och native
+  SQLite-backup med schema/ägare/integritet/FK/antal/utrymme/hash-verifiering.
+- Privat mål på ägarens iPad i iSH: `/root/JARVIS-backuper/<backup-id>/`,
+  överfört direkt via Render SSH/SFTP, med checksumma och 30 dagars retention.
+- Avstängd auto-deploy och den kopplade Blueprintens Auto Sync under fönstret.
+- Merge först efter backupgrinden, specifik release-SHA, och ett startkommando
+  som håller fel commit, saknad DB eller pågående restore i underhåll.
+- Riktad verifiering med en avsiktlig Live-uppgift och separat fysisk Safari-
+  acceptans efter godkänd deployment; ingen ny betald preview.
+- Resumabel offline-restore med privat DB/WAL/SHM-karantän och kodlåst gammal
+  start. Render Rollback-knappen används inte för databasåterställningen.
 
-SQLite [backup-API](https://www.sqlite.org/backup.html) och
-[better-sqlite3 backup](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#backupdestination-options---promise)
-stöder denna konsekventa backupmetod. Kopiera inte bara en öppen `jarvis.db`
-med `cp`: WAL hör till databasens beständiga tillstånd. Kopiera inte heller
-DB/WAL/SHM separat medan skrivningar pågår. Se [SQLite WAL](https://www.sqlite.org/wal.html#the_wal_file).
+Planerad stängning: reservera 30 minuter, uppskattat 15–30 minuter vid liten
+databas och förberedd åtkomst. Eventuell återställning kan tillföra 10–20 minuter.
+Det är en arbetsuppskattning, inte uppmätt kapacitet eller garanterad återtid.
 
-Enligt [Render Persistent Disks](https://render.com/docs/disks) är disken endast
-tillgänglig i runtime, inte i build/pre-deploy/one-off-job. Lägg därför inte
-backupen i `buildCommand` eller `preDeployCommand`. Render avråder från
-disk-snapshot som återställningsmetod för en egen databas. Dess snapshots är
-inte den verifierade SQLite-backup som denna release behöver. Tillgängliga
-snapshots och deras innehåll har inte kontrollerats här. Diskanslutningen innebär
-också ett avbrott vid byte av instans; lova inte noll nedtid.
+## Verifiering och status per återstående delkrav
 
-## Samordnad återställning vid fel
+Den befintliga `node --import tsx scripts/verify-recovery.mjs` har återanvänts
+och passerar med driftverktygens faktiska backup/restore-funktioner. Den testar
+öppen WAL-backup, fem tabellers innehåll, migration/omöppning, gamla serverns
+Live-fel trots 200 health, återställda skrivningar/konto-isolering och förlust
+av post-backup-data. Nya kontrollfall täcker privata kontrollrutter, fel tjänst/
+ägare, öppen DB, skadad backup, ogiltigt ID, och återupptagning efter avbrott
+mitt i karantänsättning med kvarvarande WAL/SHM samt efter atomisk installation.
+Alla data är syntetiska och temporära. Syntax- och diffkontroll passerar.
 
-1. Håll offentlig och intern skrivtrafik stoppad och auto-deploy kontrollerad.
-   Kontrollera vilket schema som faktiskt finns; dra ingen slutsats enbart av
-   röd/grön deployment. Samla en ny konsekvent backup av felläget för eventuell
-   dataräddning om databasen fortfarande går att läsa. Behåll pre-release-backupen.
-2. Föredra en granskad framåtriktad korrigering om användbar ny data har skrivits.
-   Återställning till pre-release-punkten förlorar ALLT därefter: uppgifter,
-   meddelanden och sessionsändringar. Den kan även återinföra sessioner som
-   loggats ut efter backupen. Återföring av senare data kräver en separat plan;
-   blanda inte manuellt gamla och nya databastabeller.
-3. För den här planens **offline-filåterställning** måste samtliga processer och
-   DB-anslutningar vara stängda och hindras från automatisk återstart. Bara
-   Maintenance Mode, en stoppad deploy eller ett enstaka process-kill bevisar
-   inte detta. Behörig operatör måste före release demonstrera en runtime-väg
-   där disken är åtkomlig men appen hålls avstängd, exempelvis en separat granskad
-   underhålls-startwrapper som återställer före start av vald gammal revision.
-   Ingen sådan väg har installerats eller verifierats på Render här. **Om den
-   inte kan säkras ska filåterställning inte utföras och releasen stoppas.**
-4. Med alla anslutningar stängda: håll det misslyckade generationens DB och
-   eventuella `-wal`/`-shm` tillsammans i privat karantän. Skriv inte över en
-   öppen fil och kombinera aldrig gammal WAL med återställd DB. Lägg en kopia
-   av den verifierade, stängda backupen på exakt `/var/data/jarvis.db`, med rätt
-   ägare/filrättigheter. Kontrollera checksumma före öppning, sedan integritet,
-   foreign keys och schema 1. Behåll backuporiginalet och karantänen.
-5. Starta exakt den gamla revisionen `a21a3a9...`, med befintliga oförändrade
-   ägarhemligheter. Starta inte PR-koden först: den skulle migrera backupen igen.
-   Verifiera inloggning, innehåll och ett uttryckligen godkänt Live-kommando,
-   därefter omladdning, meddelanden, Demo-isolering och utloggning. Healthcheck
-   ensam är otillräcklig. Sådana skrivande produktionskontroller är inte utförda
-   och ingår endast i en framtida separat godkänd release/återställning.
-6. Återöppna trafik först efter godkänd kontroll. Återställ auto-deploy/synk
-   endast när `main` pekar på den kod som ska fortsätta köras. Spara privat
-   återställningsjournal och kvarvarande backup. Ta inga destruktiva genvägar.
+Den lokala processvakten använder en `/proc`-fixture med verkliga filhandtag
+för testprocessen eftersom executorn begränsar andra processers metadata.
+Produktionsingången använder alltid `/proc` och avbryter vid oläsbara handtag
+för samma UID. Den kontrollen måste passera i underhåll innan backup/migration.
+Detta är en explicit åtkomstgrind, inte ett kvarlämnat krav att uppfinna en
+stoppmetod. Inga Render-inställningar eller produktionsdata har ändrats.
 
-Filhanteringskraven följer även [SQLite corruption guidance](https://www.sqlite.org/howtocorrupt.html).
-En native SQLite-återföring i en transaktion kan vara ett annat angreppssätt,
-men är inte den offline-metod som repeterats här och ska inte improviseras i drift.
-
-## Lokal repetition och återstående grindar
-
-Kör från denna branch med installerade dev-beroenden och bascommiten i git:
-
-```sh
-node --import tsx scripts/verify-recovery.mjs
-```
-
-Godkänd 14 oktober 2026. Skriptet hämtar den verkliga gamla migratorn/servern
-från bascommiten och använder en egen temporär katalog, två syntetiska konton
-och slumpmässigt testlösenord. Det accepterar ingen produktionssökväg.
-Det verifierar backup från öppen WAL-databas, alla fem tabellers innehåll,
-migration och omöppning, gammal servers 500 på Live trots 200 på health,
-bevarad backupchecksumma, offline-återställning, gamla serverns fungerande
-Live-skrivning och konto-isolering. Det visar också förlust av en post-backup-
-uppgift vid återställning. Testdatabaser städas bort. Inga produktionsdata används.
-
-| Grind | Status / exakt återstående steg |
+| Delkrav | Status / exakt återstående steg |
 | --- | --- |
-| Rätt workspace, repo, tjänst, branch och aktiv commit | Klart via Render-anslutningen |
-| Build/start/health/auto-deploy/disk jämfört med PR | Klart; ingen aktiv inställningskorrigering behövs |
-| Historiska deployloggar | Blockerat: noll loggrader; Events ger utfall/exitkod. Läs eventuellt sparade loggar i dashboard eller dokumentera accepterad evidenslucka; gissa inte rotorsak |
-| Aktiv DB-placering och runtime-förutsättningar | Kvar: bekräfta `DATABASE_PATH`, stödd Node och utrymme via behörig dashboard/Shell; inga hemligheter behöver delas |
-| Backup och verklig restore-beredskap | Releaseblockerare: godkänn operatör/fönster/exportmål, skapa och verifiera native backup, visa fungerande stopp/återställningsväg på befintlig tjänst |
-| Lokal kod- och återställningsverifiering | Klart: tidigare 31 tester, typkontroll, bygge, produktionsstart och Chromium; ny återställningsövning godkänd |
-| Fysisk iPhone/iPad Safari | Kvar: tangentbord, begränsad höjd, safe areas, större text och fokus på fysisk enhet; emulering ersätter inte detta |
-| Merge/release/produktionskontroller | Ej utfört och inte godkänt i detta uppdrag |
+| Rätt workspace, repo, tjänst, branch och aktiv commit | Klart via connectorn, oförändrat vid omkontroll |
+| Build/start/health/auto-deploy/disk jämfört med PR | Klart; dashboardens ordinarie värden är redan korrekta |
+| Historiskt build-/tsx-fel | Klart som tydligt attribuerat användarunderlag; gamla connectorloggar krävs inte |
+| Aktiv DB-path, Node och fritt utrymme | Klart via inloggad Shell 15 oktober; värden och marginal ovan |
+| Blueprint Auto Sync / full processinspektion | Blockerat av avslutad dashboardsession och timeout vid återinloggning; exakt läskontroll i körplanen |
+| Körbar backup och tydlig stopp-/restore-väg | Klart lokalt; verkliga driftverktyg och återanvänd övning, installation/backup ännu inte godkända |
+| Privat backupmål | Konkret föreslaget: ägarens iPad/iSH; enhetsutrymme, SSH-nyckel/Render-behörighet och SFTP måste bekräftas |
+| Relevanta regressioner | Klart: fokuserad återställningsövning och syntax/diff; hela appsviten har inte upprepats utan appändring |
+| Fysisk Safari | Planerad efter separat godkänd deployment, ingen ny preview |
+| Produktionsbackup/inställningar/merge/deploy | Ej utfört; separat beslut krävs efter åtkomstgrindarna |
 
-För mobil: öppna PR #7 och denna rapport. Öppna sedan tjänsten i Render,
-**Environment**, och bekräfta enbart att `DATABASE_PATH=/var/data/jarvis.db`;
-visa inte ägarvärden. Under **Events/Deploys** kan eventuellt kvarvarande
-icke-hemliga bygg-/startloggrader kompletteras. Förbered driftoperatör och
-backupmål enligt planen. Tryck inte Merge, Manual Deploy, Rollback eller Save
-Settings innan ett separat releasebeslut. Etapp 2 har inte påbörjats.
+Nästa enda åtgärd på mobil: öppna den kopplade Blueprintens **Settings** från
+tjänstens Blueprint-länk och läs **Auto Sync** (Yes/No), utan att ändra värdet.
+Därefter följer process- och backupåtkomstkontrollerna i körplanen.
+Begär inte lösenord, tokens, DB-filer,
+hela miljölistor eller nya historiska loggar. Produktionsåtgärder förblir ett
+förslag tills förutsättningarna är verifierade och ägaren uttryckligen godkänt.
+Etapp 2 har inte påbörjats.

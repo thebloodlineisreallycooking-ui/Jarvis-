@@ -2,17 +2,19 @@
 
 ## Current scope — Etapp 1: stable foundation
 
-Updated 14 October 2026. The requested source corrections are implemented and
-locally verified. Read-only Render service/deploy inspection is now complete;
-log/environment access gaps, production recovery readiness and physical Safari
-verification remain. Release is not yet approved or ready. No next-stage
-capabilities added.
+Updated 15 October 2026. The requested source corrections and executable
+backup/restore preparations are implemented and locally verified. Actual Render
+DATABASE_PATH, Node and free space are now verified. Remaining access gates are
+Blueprint Auto Sync, process-inspection permissions and the owner's private
+iPad/SFTP destination. Production operations remain unapproved and unperformed.
+Physical Safari belongs after separately approved deployment; unavailable old
+connector logs do not block release. No next-stage capabilities added.
 
 ## Verified source and GitHub delivery
 
 - Full git clone based on `main` commit
   `a21a3a9b4877ce31afc8eec28ae5557854f01b01` (merged PR #6).
-  GitHub and local refs matched; `main` was unchanged when rechecked on 14 October.
+  GitHub and local refs matched; `main` was unchanged when rechecked on 15 October.
 - Separate work branch: `codex/etapp-1-stabil-grund`.
 - Existing PRs #4 and #5 were inspected as older hosting variants, not used as
   the baseline. All requested files and `AGENTS.md` were read.
@@ -41,6 +43,10 @@ capabilities added.
   setup/requirement status, and adds `scripts/verify-recovery.mjs`. Application
   code remains at the previously verified revision `56978a89...`. This durable
   checkpoint records observed Render data and an explicit no-go release decision.
+- Verified operations-kit checkpoint:
+  `dade9b6c16df3e0ec61484e0ff10dd558744d695`, tree
+  `e5baaf2f89dd81b0d8285f2b30f9718c471ac75b`. This is the pinned proposed code
+  release; the subsequent runbook checkpoint changes documentation only.
 
 ## Verified local behavior
 
@@ -94,25 +100,46 @@ capabilities added.
   The dashboard already has `npm ci --include=dev && npm run build`; main's
   Blueprint omits it, and the PR codifies it. No active setting fix is proposed.
 - Events show two earlier exit-127 deploy failures after successful builds,
-  followed by success after a build-command change. Historical and recent log
-  queries returned zero rows, so exact historical root cause is unverified.
-- Active environment values, disk free space and backup availability are not
-  exposed by the connector's read tools. Dashboard fallback reached sign-in.
-  Actual DATABASE_PATH still needs non-secret confirmation. No new successful
-  HTTP health/in-app production test is claimed from the Render `live` status.
+  followed by success after a build-command change. Connector log queries
+  returned zero rows. The user supplied the earlier sequence `Empty build
+  command; skipping build` then `tsx: not found`; this is explicitly attributed
+  user evidence, not recovered connector output. Old log absence is not a gate.
+- Secure browserAuth sign-in and user device approval succeeded on 15 October.
+  Existing instance `6hxdk` reported the expected service ID/baseline SHA,
+  `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`, mounted `/var/data`, and
+  `1003794432` bytes free. DB/WAL/SHM file sizes were 4096/61832/32768 bytes;
+  the conservative backup requirement was 67503648 bytes. No DB was opened.
+- The signed-in service links to Blueprint `exs-db1vjsu7bikc73bt8gdg`. Auto Sync
+  and the extra /proc-permission probe result remain unverified. The browser
+  session ended; supported reauthentication timed out and a fresh service page
+  showed sign-in. Previously captured runtime evidence remains valid for its
+  observation time. Shell indicated SSH needs a registered public key; no
+  successful owner-device SFTP connection or backup destination is claimed.
+- No new successful HTTP health/in-app production test is claimed from the
+  Render `live` status. Only whitelisted runtime values and filesystem metadata
+  were read; no secrets or database rows were retrieved.
 - No production deploy, restart, merge, settings/secret/owner change, resource
-  creation or database read/download/write was performed.
+  creation or database-content read/download/write was performed.
 
 ## Review handoff
 
-Open PR #7 and `docs/RENDER_OPERATIONS_REVIEW.md`. Keep the draft unmerged:
-release still needs actual DB-path/runtime confirmation, a consistent native
-backup and an operator-tested Render stop/restore path before schema migration.
-The report specifies a write freeze, backup verification/export, coordinated
-data/code recovery and loss of post-backup changes. No production backup was
-created or database downloaded. Historical log details and physical Safari
-checks remain explicit gaps. Any production setting/maintenance/release action
-needs a separate decision. Etapp 2 is not started.
+Open PR #7, `docs/RENDER_OPERATIONS_REVIEW.md` and `docs/RELEASE_RUNBOOK.md`.
+The latter gives executable pinned source installation, exact maintenance-only
+start and commit guards, native consistent backup, direct owner-iPad transfer,
+release smoke and resumable offline recovery paired with old code. A restart
+during restore starts maintenance again, never the application. The approved
+synthetic recovery exercise now exercises these actual operations functions.
+
+Keep the draft unmerged. Next single dashboard action: follow the service's
+Blueprint link, open Settings and read Auto Sync (Yes/No), without changing it.
+Then complete the documented read-only process-permission and owner-device/SFTP
+access checks. The proposed backup target is private iSH storage on the owner's
+passcode-protected iPad, not GitHub/chat/public storage. No backup has been made.
+Only after access prerequisites are resolved should the owner decide on the
+concrete production plan and 30-minute window. A verified backup on both targets
+must precede merge/migration. Physical Safari follows separately approved
+deployment. Restore loses post-backup changes and can revive older sessions;
+normal use stays frozen through acceptance. Etapp 2 is not started.
 
 
 ## Release preparation checkpoint — 14 October 2026
@@ -139,8 +166,8 @@ needs a separate decision. Etapp 2 is not started.
 - Read-only service metadata was rechecked and is unchanged. The supported
   browser authentication flow offered Google; after the user's choice it
   encountered `502 / Connection refused`. No authenticated Render dashboard
-  session was verified. Active DATABASE_PATH, Node and free space still need
-  a single read-only Shell command; no secrets or DB contents are requested.
+  session was verified at that checkpoint. This access limitation was superseded
+  by the successful 15 October runtime observation recorded above.
 - The user supplied historical lines `Empty build command; skipping build`
   followed by `tsx: not found`. This is user-provided evidence, not recovered
   connector output. Missing old connector logs are not a release blocker.
@@ -150,3 +177,19 @@ needs a separate decision. Etapp 2 is not started.
   It specifies the existing service, commit-guarded start commands, an owner-only
   iPad backup target through SSH/SFTP, release checks and the exact rollback.
   Backup/settings/merge/deploy remain unapproved and unperformed.
+
+## Release runbook checkpoint — 15 October 2026
+
+- Finished `docs/RELEASE_RUNBOOK.md` and reconciled setup, operations review and
+  requirement report with observed runtime facts and remaining access gates.
+  All five documentation files are saved together on the same branch/PR.
+- The proposed code release and operations-kit hashes remain pinned to `dade9b6...`.
+  This checkpoint changes no application or operations implementation. Shell
+  snippets and embedded Node programs are syntax-checked; kit hashes and API
+  expectations are checked against that pinned source, and `git diff --check`
+  passes. The existing full suite and recovery rehearsal were not rerun for
+  documentation-only edits.
+- The installer, backup, device transfer, setting changes, merge, migration,
+  smoke write and restore are proposals only. Read-only runtime inspection is
+  the only production action performed. Remaining authorization boundaries are
+  explicit; no data or credentials are attached to the public repository.

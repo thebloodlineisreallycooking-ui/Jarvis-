@@ -1,6 +1,7 @@
 # Etapp 1 — implementation and verification report
 
-Review date: 14 October 2026. Code changes are confined to **STABIL GRUND**.
+Review date: 15 October 2026 (runtime/documentation follow-up; application
+verification completed earlier). Code changes are confined to **STABIL GRUND**.
 The existing dark three-view interface and task-capture functionality remain.
 
 ## Source and delivery
@@ -8,7 +9,7 @@ The existing dark three-view interface and task-capture functionality remain.
 - Repository: `https://github.com/thebloodlineisreallycooking-ui/Jarvis-`
 - Base: `main` at `a21a3a9b4877ce31afc8eec28ae5557854f01b01`, independently
   verified through the GitHub connector and a complete git clone. `main` was
-  rechecked on 14 October and had not moved.
+  rechecked on 15 October and had not moved.
 - Work branch: `codex/etapp-1-stabil-grund`; no direct changes to `main`.
 - Existing PRs #4 and #5 are earlier hosting variants. Merged PR #6 is in the base.
 - Real draft PR: [#7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7).
@@ -44,12 +45,16 @@ The existing dark three-view interface and task-capture functionality remain.
 | `tests/workspace.test.ts` | HTTP errors, session cleanup, mode separation, request races and pending/error states |
 | `scripts/verify-production.mjs` | Reproducible isolated production install/build/start/restart verification |
 | `scripts/verify-browser.mjs` | Reproducible local HTTPS browser review with synthetic content |
-| `scripts/verify-recovery.mjs` | Isolated WAL backup, migration and old-code recovery rehearsal |
+| `scripts/verify-recovery.mjs` | Reused WAL/migration/old-code rehearsal; operations guards and interrupted restore |
+| `scripts/ops/database.mjs` | Fixed production target, native backup/verification, resumable offline restore |
+| `scripts/ops/maintenance.mjs` | Maintenance-only public listener and authenticated loopback operations |
+| `scripts/ops/client.mjs` | Private control CLI with explicit service confirmation |
 | `README.md` | Current capability and existing-deployment description |
 | `docs/SETUP.md` | Existing Render-service comparison, mobile handoff and verification commands |
 | `docs/PROGRESS.md` | Separate local, GitHub and Render status |
 | `docs/ETAPP_1_REPORT.md` | This requirement-by-requirement report |
-| `docs/RENDER_OPERATIONS_REVIEW.md` | Observed Render/PR comparison, recovery runbook and release blockers |
+| `docs/RENDER_OPERATIONS_REVIEW.md` | Observed Render/PR comparison, attributed user log evidence and access gaps |
+| `docs/RELEASE_RUNBOOK.md` | Exact pinned install/backup/release/restore commands, private iPad target and post-deploy Safari |
 
 Files such as `server/index.ts`, `server/db/database.ts`, the TypeScript/Vite/
 Vitest configs and `tests/phase-a.test.ts` were inspected and retained. No
@@ -66,8 +71,9 @@ explicitly describes GitHub. It does not imply production deployment.
 | GitHub read/write and real PR checked separately | Klart | Connector reads, branch/tree/commit/ref writes and PR #7 each confirmed |
 | Render service linked to the correct repo | Klart | User confirmed My Workspace; service srv-db1vle3bc2fs73em1t30 matches the exact repo URL |
 | Render active branch/SHA/build/start/health/disk | Klart | main at a21a3a9; live deploy from 6 October; configuration matches PR #7 |
-| Render historical deploy logs | Blockerat | Log queries return zero rows; Events confirm success and earlier exit codes, not root cause |
-| Render active database path | Blockerat | Connector lacks environment-value reads; dashboard fallback requires sign-in; preserve /var/data/jarvis.db |
+| Render historical deploy logs | Klart med angiven källa | User supplied Empty build command / tsx not found; connector returned no rows. Missing historical rows do not block release |
+| Render active database path, Node, disk free | Klart | Authenticated Shell on 15 October: /var/data/jarvis.db, v24.21.0, 1003794432 bytes free; /var/data mounted |
+| Blueprint Auto Sync / process-inspection access | Blockerat | Blueprint link confirmed; values/results not captured before session ended. Secure reauthentication timed out; exact read-only follow-up in runbook |
 | Production DB not downloaded or tested | Klart | Only disposable local SQLite paths and generated test-owner credentials used |
 | A: explicit production build and npm start | Klart | Blueprint build command and clean production verification |
 | A: tsx available at actual server start | Klart | Runtime dependency; `node --import tsx` starts after dev dependencies are pruned |
@@ -85,7 +91,7 @@ explicitly describes GitHub. It does not imply production deployment.
 | C: historical uncertainty documented | Klart | Timestamp then stored row order establishes a baseline; no inferred legacy pairs |
 | C: exact current command pair returned | Klart | Transaction returns its own generated messages; future-dated historical row regression |
 | C: backup/rollback compatibility rehearsal | Klart | Synthetic WAL backup and restore; actual old server fails Live on schema 2, works again after coordinated restore |
-| C: production recovery readiness | Blockerat | No production backup or verified Render process-stop/restore path; explicit release gate in operations review |
+| C: runnable backup/restore preparation | Klart lokalt | Maintenance-only start, commit guard, native backup, resumable restore and reused rehearsal. Actual Render permissions/private device access and separately authorized backup remain gates |
 | D: database Live/Demo boundary | Redan korrekt | Demo return precedes writes; Live-only table constraint retained and tested |
 | D: client Live/Demo separation and labels | Klart | Separate lists and drafts; matching mode in history, task panel and request state |
 | D: Demo never increases persistent tasks | Klart | DB snapshots/sequence unchanged by repeated Demo commands; browser count check |
@@ -108,7 +114,7 @@ explicitly describes GitHub. It does not imply production deployment.
 | Typecheck, regression tests, build and diff check | Klart | Final local gate; see verification section |
 | Production installation/build/actual start | Klart | Separate runtime/db; dev dependencies removed before npm start |
 | 390/430/820 empty and filled three-view review | Klart | Chromium matrix, screenshots visually reviewed, long history and errors exercised |
-| Physical iPhone/iPad Safari keyboard and OS behavior | Blockerat | No physical device access in this environment |
+| Physical iPhone/iPad Safari keyboard and OS behavior | Planerad efter release | After separately approved deployment to existing service; no mobile preview or new paid service |
 | Optional WebKit engine review | Blockerat | Required system libraries unavailable; installation denied by execution environment |
 | Durable source/commits and PR | Klart | GitHub work branch and real draft PR; no merge |
 | Progress/setup and mobile next steps | Klart | Current docs distinguish source verification from observed hosting |
@@ -134,35 +140,55 @@ explicitly describes GitHub. It does not imply production deployment.
 - Browser screenshots/results are outside the repository. They are verification
   artifacts, not source files or evidence of a real iPhone test.
 - Recovery rehearsal: `node --import tsx scripts/verify-recovery.mjs` passed
-  against actual baseline source. Consistent WAL backup, preserved rows/hash,
-  migration/reopen, old server's healthy-but-unwritable state, offline restore,
-  account isolation and post-backup data-loss boundary were checked locally.
+  against actual baseline source and now calls the real operations functions.
+  Consistent WAL backup, preserved rows/hash, migration/reopen, old-server
+  incompatibility, isolated restored writes, private authenticated control,
+  rejection of open DB/wrong service/wrong owner/damaged backup, and recovery
+  after interrupted quarantine/atomic installation were checked locally.
+  Residual WAL/SHM came from a disposable child process. No production DB used.
+- The operations-only follow-up passed focused recovery, JavaScript syntax
+  and diff checks. The full application suite was not repeated. The executor
+  restricts other processes' /proc: test inspection uses a fixture linked to
+  actual test-process descriptors. Production always inspects same-user /proc
+  entries and fails closed on permission errors; this is a runtime access gate.
 
 ## Operational limits and next action
 
-**Not ready for production release.** The user confirmed My Workspace and the
-existing service was inspected read-only. Active main commit is the PR's base,
-with a successful live deploy from 6 October. Build/start/health/auto-deploy/disk
-match the PR. The current dashboard build command was already correct; the PR
-adds it to the Blueprint. No active configuration correction is needed for those
-fields. Full evidence and exact remaining gates are in
-[the operations review](RENDER_OPERATIONS_REVIEW.md).
+**The release preparations are implemented and locally verified; production
+execution remains blocked by specific access prerequisites and separate approval.**
+The correct My Workspace service is live on the baseline commit; ordinary
+build/start/health/region/disk already match PR #7. Full evidence is in
+[the operations review](RENDER_OPERATIONS_REVIEW.md). The executable
+[release runbook](RELEASE_RUNBOOK.md) pins release/kit commit
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`, old-code SHA, commands, expected
+outage, private owner-iPad target and recovery path. Its later documentation
+commit does not change application or operations code.
 
-Log queries returned no rows. Events identify earlier exit 127 deployments and
-later success after a build-command change; the precise historical cause remains
-unverified. Active DATABASE_PATH, runtime capacity, backup and Render recovery
-access still require verification. Dashboard fallback requires separate sign-in.
+The user supplied the earlier Empty build command / tsx not found log sequence.
+It is attributed to the user; connector log absence does not alone block release.
+Active DATABASE_PATH=/var/data/jarvis.db, Node v24.21.0, the mounted disk and
+1003794432 free bytes were verified in authenticated Shell on 15 October.
+The conservative space requirement was 67503648 bytes. Only filesystem
+metadata was read, not database contents. The later session ended and secure
+reauthentication timed out. The next single dashboard action is reading the
+linked Blueprint's Auto Sync setting. Process-inspection permissions, SSH/SFTP
+access and local iPad capacity remain to be confirmed; no private database or
+credential is requested. Each remaining step is specified in the runbook.
 
-Migration 2 is incompatible with old positional message INSERTs, even while
-health reports 200. Use the documented native SQLite backup under a write freeze,
-then a reviewed forward fix or coordinated offline data/code restoration. A
-Render code rollback does not restore the disk. The production backup and
-process-stop/restore procedure have not been executed; release remains blocked.
-Unknown legacy task status remains an explicit error. Refresh Live data before
-retrying a command whose response was lost, because automatic deduplication is
-outside this stage.
+Maintenance starts no application or migration, even after restart. Native
+backup is consistent with WAL; offline restore preserves the failed generation
+in quarantine and pairs schema 1 with exact old code. Commit guards prevent a
+settings-triggered deploy of new main from remigrating the restored database.
+The actual maintenance installation and production backup are still unapproved
+and have not happened. Restore loses post-backup data and can revive old
+sessions; normal use must remain frozen until acceptance or require a fresh
+data-loss/forward-fix decision.
 
-On mobile: review PR #7 and the operations report, confirm only non-secret
-database-path/log details, arrange the backup/recovery gate, then explicitly
-approve any later release. Physical Safari checks remain. No merge, production
-mutation or Etapp 2 work has been performed.
+Physical Safari checks are scheduled after a separately approved deployment,
+not required before an unavailable mobile preview. Unknown legacy task status
+remains an explicit error. Refresh Live data before retrying a command whose
+response was lost; automatic deduplication is outside this stage.
+
+All source is on the same work branch and real draft PR #7. No merge, deployment,
+restart, production backup/database-content access, settings/secrets/owner change, resource
+creation or Etapp 2 work has been performed.
