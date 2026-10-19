@@ -2,11 +2,11 @@
 
 ## Current scope — Etapp 1: stable foundation
 
-Updated 15 October 2026. The requested source corrections and executable
+Updated 19 October 2026. The requested source corrections and executable
 backup/restore preparations are implemented and locally verified. Actual Render
-DATABASE_PATH, Node and free space are now verified. Remaining access gates are
-Blueprint Auto Sync, process-inspection permissions and the owner's private
-iPad/SFTP destination. Production operations remain unapproved and unperformed.
+DATABASE_PATH, Node and free space were verified on 15 October. The user
+reported Blueprint Auto Sync = Yes on 19 October. Remaining access gates are
+process-inspection permissions and the owner's private iPad/SFTP destination. Production operations remain unapproved and unperformed.
 Physical Safari belongs after separately approved deployment; unavailable old
 connector logs do not block release. No next-stage capabilities added.
 
@@ -109,8 +109,9 @@ connector logs do not block release. No next-stage capabilities added.
   `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`, mounted `/var/data`, and
   `1003794432` bytes free. DB/WAL/SHM file sizes were 4096/61832/32768 bytes;
   the conservative backup requirement was 67503648 bytes. No DB was opened.
-- The signed-in service links to Blueprint `exs-db1vjsu7bikc73bt8gdg`. Auto Sync
-  and the extra /proc-permission probe result remain unverified. The browser
+- The signed-in service links to Blueprint `exs-db1vjsu7bikc73bt8gdg`. The user
+  reported Auto Sync = Yes on 19 October; this is attributed dashboard evidence.
+  The extra /proc-permission probe result remains unverified. The browser
   session ended; supported reauthentication timed out and a fresh service page
   showed sign-in. Previously captured runtime evidence remains valid for its
   observation time. Shell indicated SSH needs a registered public key; no
@@ -130,9 +131,9 @@ release smoke and resumable offline recovery paired with old code. A restart
 during restore starts maintenance again, never the application. The approved
 synthetic recovery exercise now exercises these actual operations functions.
 
-Keep the draft unmerged. Next single dashboard action: follow the service's
-Blueprint link, open Settings and read Auto Sync (Yes/No), without changing it.
-Then complete the documented read-only process-permission and owner-device/SFTP
+Keep the draft unmerged. Next single dashboard action: open jarvis-private →
+Shell and confirm that the terminal is visible. Change no settings. Then
+complete the documented read-only process-permission and owner-device/SFTP
 access checks. The proposed backup target is private iSH storage on the owner's
 passcode-protected iPad, not GitHub/chat/public storage. No backup has been made.
 Only after access prerequisites are resolved should the owner decide on the
@@ -193,3 +194,15 @@ normal use stays frozen through acceptance. Etapp 2 is not started.
   smoke write and restore are proposals only. Read-only runtime inspection is
   the only production action performed. Remaining authorization boundaries are
   explicit; no data or credentials are attached to the public repository.
+
+## Auto Sync checkpoint — 19 October 2026
+
+- The user answered Yes to the explicit question about the linked Blueprint's
+  Auto Sync setting. Recorded as user-provided dashboard evidence, not an
+  independent live-tool observation or production authorization.
+- Updated all five release documents on the existing branch and PR #7. The
+  pinned code release and maintenance/backup/restore implementation are unchanged.
+- Next step is opening the existing service's Shell for the read-only process
+  permission check. Private iPad/SFTP access remains unverified.
+- Documentation diff check passes. No test suite rerun for this factual update;
+  no Render settings, backups, database operations, merge or deployment performed.

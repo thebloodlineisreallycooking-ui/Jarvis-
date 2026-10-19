@@ -1,6 +1,6 @@
 # Etapp 1 — implementation and verification report
 
-Review date: 15 October 2026 (runtime/documentation follow-up; application
+Review date: 19 October 2026 (user-reported Auto Sync follow-up; application
 verification completed earlier). Code changes are confined to **STABIL GRUND**.
 The existing dark three-view interface and task-capture functionality remain.
 
@@ -73,7 +73,8 @@ explicitly describes GitHub. It does not imply production deployment.
 | Render active branch/SHA/build/start/health/disk | Klart | main at a21a3a9; live deploy from 6 October; configuration matches PR #7 |
 | Render historical deploy logs | Klart med angiven källa | User supplied Empty build command / tsx not found; connector returned no rows. Missing historical rows do not block release |
 | Render active database path, Node, disk free | Klart | Authenticated Shell on 15 October: /var/data/jarvis.db, v24.21.0, 1003794432 bytes free; /var/data mounted |
-| Blueprint Auto Sync / process-inspection access | Blockerat | Blueprint link confirmed; values/results not captured before session ended. Secure reauthentication timed out; exact read-only follow-up in runbook |
+| Blueprint Auto Sync | Klart med angiven källa | User dashboard reading: Yes, 19 October; no settings change authorized or performed |
+| Process-inspection access | Kvar | Result not captured before session ended; exact read-only follow-up in runbook |
 | Production DB not downloaded or tested | Klart | Only disposable local SQLite paths and generated test-owner credentials used |
 | A: explicit production build and npm start | Klart | Blueprint build command and clean production verification |
 | A: tsx available at actual server start | Klart | Runtime dependency; `node --import tsx` starts after dev dependencies are pruned |
@@ -170,8 +171,9 @@ Active DATABASE_PATH=/var/data/jarvis.db, Node v24.21.0, the mounted disk and
 1003794432 free bytes were verified in authenticated Shell on 15 October.
 The conservative space requirement was 67503648 bytes. Only filesystem
 metadata was read, not database contents. The later session ended and secure
-reauthentication timed out. The next single dashboard action is reading the
-linked Blueprint's Auto Sync setting. Process-inspection permissions, SSH/SFTP
+reauthentication timed out. The user reported Blueprint Auto Sync = Yes on
+19 October. Next single dashboard action: open jarvis-private → Shell and
+confirm the terminal is visible. Process-inspection permissions, SSH/SFTP
 access and local iPad capacity remain to be confirmed; no private database or
 credential is requested. Each remaining step is specified in the runbook.
 

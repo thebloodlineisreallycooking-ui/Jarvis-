@@ -8,8 +8,9 @@ godkända. Endast läsande drift- och filsystemsmetadata har kontrollerats.**
 
 Driftverktygen är färdiga och den befintliga syntetiska återställningsövningen
 har återanvänts med dem. Aktiv `DATABASE_PATH`, Node och ledigt diskutrymme är
-verifierade. Före produktionsstart återstår Blueprintens Auto Sync-värde,
-processinspektionens åtkomst samt ägarens SSH/SFTP-åtkomst och privata iPad-mål.
+verifierade. Användaren avläste Auto Sync = Yes den 19 oktober 2026. Före
+produktionsstart återstår processinspektionens åtkomst samt ägarens
+SSH/SFTP-åtkomst och privata iPad-mål.
 Gamla loggar och fysisk Safari är inte förhandsblockerare. Safari kontrolleras
 efter separat godkänd deployment. Backup ska dessutom vara verifierad på båda
 målen innan merge eller migration tillåts.
@@ -26,7 +27,7 @@ målen innan merge eller migration tillåts.
 | Aktiv gammal deploy | `dep-db2k2kmi0phs738s20k0`, live 6 oktober 18:44:34 UTC |
 | Föreslagen releasecommit och driftkit | `dade9b6c16df3e0ec61484e0ff10dd558744d695` |
 | PR-branch | `codex/etapp-1-stabil-grund` |
-| Kopplad Blueprint | `exs-db1vjsu7bikc73bt8gdg`; kopplingen synlig i inloggad dashboard, Auto Sync-värdet ännu inte avläst |
+| Kopplad Blueprint | `exs-db1vjsu7bikc73bt8gdg`; kopplingen synlig i inloggad dashboard, Auto Sync = Yes enligt användarens dashboardavläsning 19 oktober 2026 |
 | Region / plan / instanser | `frankfurt` / befintlig `starter` / 1 |
 | Disk / DB | `jarvis-data`, `dsk-db1vlebbc2fs73em1tmg`, 1 GB, `/var/data/jarvis.db` |
 | Byggkommando, behåll | `npm ci --include=dev && npm run build` |
@@ -88,14 +89,16 @@ att passera. Avvikelse innebär stopp och ett nytt konkret förslag.
 Connectorn saknar dessa runtimefunktioner, men den godkända webbläsarvägen
 fungerade 15 oktober och ersätter det äldre 502-hindret i rapporteringen.
 Sessionen avslutades senare. Ett nytt säkert inloggningsförsök gav timeout;
-en ny kontroll av tjänstesidan visade inloggning. Därför är Blueprintens
-Auto Sync-värde och resultatet av den påbörjade processkontrollen fortfarande
-okända. Det gör inte de tidigare verifierade runtimevärdena okända igen.
+en ny kontroll av tjänstesidan visade inloggning. Resultatet av den påbörjade
+processkontrollen är fortfarande okänt. Den 19 oktober svarade användaren Yes
+på den uttryckliga frågan om Blueprintens Auto Sync. Detta är användarens
+avläsning, inte en ny connector-/webbläsarkontroll eller ett ändringsgodkännande.
+Det gör inte de tidigare verifierade runtimevärdena okända igen.
 
-Nästa enda dashboardåtgärd: öppna den kopplade Blueprinten från tjänstens
-Blueprint-länk, välj **Settings** och läs **Auto Sync**. Återge endast Yes/No;
-ändra ingenting. Därefter kontrolleras processåtkomst med följande läsande
-Shell-kommando, utan att öppna någon databasfil:
+Nästa enda dashboardåtgärd: öppna **jarvis-private → Shell** och bekräfta att
+terminalen visas. Ändra inga inställningar. När terminalen är tillgänglig
+kontrolleras processåtkomst med följande läsande kommando, utan att öppna någon
+databasfil:
 
 ```sh
 node <<'NODE'
@@ -148,7 +151,8 @@ backup ska inte exporteras från enheten till chatten.
 - Render-konto med åtkomst till just denna tjänsts Shell och, vid senare
   godkännande, startkommando, maintenance, auto-deploy och deploy av specifik SHA.
 - Tjänsten styrs av Blueprint `exs-db1vjsu7bikc73bt8gdg`: rätt att tillfälligt
-  stänga av dess Auto Sync och senare återställa det avlästa ursprungsvärdet.
+  stänga av dess Auto Sync och senare återställa Yes, det användaravlästa
+  ursprungsvärdet. Bekräfta att det är oförändrat vid det godkända fönstrets start.
 - Ägarens SSH-nyckel på iPad och dess **publika** nyckel registrerad i Render.
   Shell visade "To make SSH available, add an SSH public key". Ingen fungerande
   nyckel/SFTP-session har verifierats. Registrering, om den behövs, ingår i ett

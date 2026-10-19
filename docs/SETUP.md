@@ -54,9 +54,11 @@ old log rows do not block release. The current dashboard build command is
 already correct. Secure browserAuth sign-in succeeded on 15 October and the
 active DATABASE_PATH, Node and free space were read from the existing instance.
 Only filesystem metadata was read; no SQLite connection or backup was opened.
-The service is managed by Blueprint `exs-db1vjsu7bikc73bt8gdg`. Its Auto Sync
-value and the additional process-permission probe remain unverified: the
-session ended and secure reauthentication timed out. Shell indicated SSH needs
+The service is managed by Blueprint `exs-db1vjsu7bikc73bt8gdg`. On 19 October
+the user reported Auto Sync = Yes from the dashboard. This is attributed user
+evidence, not a new connector observation or authorization to change it.
+The process-permission probe remains unverified: the session ended and secure
+reauthentication timed out. Shell indicated SSH needs
 a public key; a working owner-device SFTP connection has not been established.
 
 ## Mobile review and later production action
@@ -64,9 +66,9 @@ a public key; a working owner-device SFTP connection has not been established.
 1. Review [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7),
    [the operations review](RENDER_OPERATIONS_REVIEW.md) and the pinned
    [executable release runbook](RELEASE_RUNBOOK.md). Next single dashboard action:
-   follow the service's Blueprint link, open **Settings**, and report **Auto Sync**
-   (Yes/No) without changing it. The subsequent read-only process-permission
-   check and owner-device access preparation are specified in the runbook.
+   open **jarvis-private → Shell** and confirm that the terminal is visible.
+   Change no settings. The subsequent read-only process-permission check and
+   owner-device access preparation are specified in the runbook.
 2. The proposed private off-disk backup target is the owner's passcode-protected
    iPad, local iSH `/root/JARVIS-backuper/<backup-id>/`. The runbook identifies
    SSH/SFTP permissions, source installation, transfer and hash checks. No

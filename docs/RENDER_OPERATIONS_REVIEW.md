@@ -1,6 +1,7 @@
 # Etapp 1 — Render-granskning och återställningsplan
 
-Granskad 14 oktober 2026, kompletterad med inloggad runtimekontroll 15 oktober.
+Granskad 14 oktober 2026, kompletterad med inloggad runtimekontroll 15 oktober
+och användaravläst Blueprint Auto Sync den 19 oktober.
 Avser [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7)
 på `codex/etapp-1-stabil-grund`. Jämförd applikationsrevision:
 `56978a89e9bffefc4b863ceafdc0a331ec8f3799`. Den första uppföljningen lade till dokumentation och en lokal återställningsövning.
@@ -10,8 +11,9 @@ Den senaste tillför körbara driftverktyg i `scripts/ops/`, fortfarande utan
 
 **Releasebesked: FÖRBEREDELSERNA ÄR KODADE OCH LOKALT VERIFIERADE;
 PRODUKTIONSRELEASE FÅR INTE STARTAS ÄNNU.** Aktiv DB-path, Node-version och
-fritt utrymme är verifierade. Kvar är Blueprintens Auto Sync-värde,
-processinspektionens åtkomst samt SSH/SFTP och det privata iPad-målet.
+fritt utrymme är verifierade. Auto Sync = Yes är avläst av användaren
+19 oktober. Kvar är processinspektionens åtkomst samt SSH/SFTP och det privata
+iPad-målet.
 Därefter krävs ett separat beslut om backup/inställningar/merge/deploy.
 Den körbara, commit-låsta [releaseplanen](RELEASE_RUNBOOK.md) anger hela ordningen,
 underhållsstart, backup, verifiering, avbrott och exakt återställning. Historisk
@@ -38,7 +40,7 @@ för drifthistoriken. Alla angivna tider i tabellerna är UTC.
 | Vad npm start kör | Bascommit: `NODE_ENV=production tsx server/index.ts` | PR: `NODE_ENV=production node --import tsx server/index.ts`; `tsx` flyttas till runtime-beroenden |
 | Healthcheck | `/api/health` | Matchar; kontrollerar endast `SELECT 1`, inte meddelandeskrivning |
 | Auto-deploy | `yes`, trigger `commit` | Matchar `autoDeployTrigger: commit`; framtida main-merge kan starta release |
-| Blueprint | `exs-db1vjsu7bikc73bt8gdg`, koppling synlig i inloggad dashboard | Auto Sync-värdet ännu inte avläst; måste låsas under releasefönstret |
+| Blueprint | `exs-db1vjsu7bikc73bt8gdg`, koppling synlig i inloggad dashboard | Auto Sync = Yes enligt användarens avläsning 19 oktober; måste låsas under godkänt releasefönster |
 | Region / plan / runtime | `frankfurt` / `starter` / `node` | Matchar; ska bevaras |
 | Disk | `jarvis-data`, `dsk-db1vlebbc2fs73em1tmg`, 1 GB, `/var/data` | Exakt matchning |
 | Instanser / underhåll | 1 instans; maintenance mode av; inte suspenderad | Befintligt driftläge; inget ändrat |
@@ -87,8 +89,10 @@ filmetadata och utvalda icke-hemliga miljövärden. Inga ägarhemligheter läste
 
 Resultatet från en påbörjad extra `/proc`-åtkomstkontroll hann inte verifieras.
 Sessionen avslutades senare; en säker återinloggning gav timeout och en ny
-tjänstesida visade inloggning. Därför är processåtkomsten och Blueprintens
-Auto Sync-värde kvarstående läskontroller. Shell visade att SSH kräver en
+tjänstesida visade inloggning. Processåtkomsten är en kvarstående läskontroll.
+Användaren bekräftade Auto Sync = Yes den 19 oktober som svar på den specifika
+dashboardfrågan; ingen inställningsändring eller release godkändes därmed.
+Shell visade att SSH kräver en
 registrerad publik nyckel; någon fungerande SFTP-anslutning är inte verifierad.
 
 Den externa hälsoläsningen kunde inte nå URL:en genom webbverktyget; `live`
@@ -168,16 +172,17 @@ stoppmetod. Inga Render-inställningar eller produktionsdata har ändrats.
 | Build/start/health/auto-deploy/disk jämfört med PR | Klart; dashboardens ordinarie värden är redan korrekta |
 | Historiskt build-/tsx-fel | Klart som tydligt attribuerat användarunderlag; gamla connectorloggar krävs inte |
 | Aktiv DB-path, Node och fritt utrymme | Klart via inloggad Shell 15 oktober; värden och marginal ovan |
-| Blueprint Auto Sync / full processinspektion | Blockerat av avslutad dashboardsession och timeout vid återinloggning; exakt läskontroll i körplanen |
+| Blueprint Auto Sync | Klart som användaravläst uppgift: Yes, 19 oktober 2026; ingen ändring utförd |
+| Full processinspektion | Kvar: resultat saknas efter avslutad dashboardsession; exakt läskontroll i körplanen |
 | Körbar backup och tydlig stopp-/restore-väg | Klart lokalt; verkliga driftverktyg och återanvänd övning, installation/backup ännu inte godkända |
 | Privat backupmål | Konkret föreslaget: ägarens iPad/iSH; enhetsutrymme, SSH-nyckel/Render-behörighet och SFTP måste bekräftas |
 | Relevanta regressioner | Klart: fokuserad återställningsövning och syntax/diff; hela appsviten har inte upprepats utan appändring |
 | Fysisk Safari | Planerad efter separat godkänd deployment, ingen ny preview |
 | Produktionsbackup/inställningar/merge/deploy | Ej utfört; separat beslut krävs efter åtkomstgrindarna |
 
-Nästa enda åtgärd på mobil: öppna den kopplade Blueprintens **Settings** från
-tjänstens Blueprint-länk och läs **Auto Sync** (Yes/No), utan att ändra värdet.
-Därefter följer process- och backupåtkomstkontrollerna i körplanen.
+Nästa enda åtgärd på mobil: öppna **jarvis-private → Shell** och bekräfta att
+terminalen visas. Därefter följer den läsande processkontrollen och
+backupåtkomstkontrollerna i körplanen. Ändra inga inställningar.
 Begär inte lösenord, tokens, DB-filer,
 hela miljölistor eller nya historiska loggar. Produktionsåtgärder förblir ett
 förslag tills förutsättningarna är verifierade och ägaren uttryckligen godkänt.
