@@ -1,5 +1,46 @@
 # Etapp 1 — körplan för backup, release och återställning
 
+## Åtkomstkontroll 22 oktober 2026 — aktuell status
+
+Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är
+användartillhandahållna terminalbilder från iSH på iPhone, inte en ny direkt
+connectoravläsning. Inga bilder, nycklar, loggfiler eller databaser sparas i repot.
+
+- 21 oktober: SSH inloggning och separat SFTP `pwd`/`bye` lyckades mot
+  `srv-db1vle3bc2fs73em1t30@ssh.frankfurt.render.com`. SFTP visade
+  `/opt/render/project/src`; inga filer överfördes. Användaren hade registrerat
+  sin publika SSH-nyckel själv. Privat nyckel/lösenfras stannar på enheten.
+- Runtime: rätt service-ID, commit `a21a3a9b4877ce31afc8eec28ae5557854f01b01`,
+  `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`. `df -h` visade
+  `/var/data` monterad, 958 MiB tillgängligt (avrundat). PR #7 var inte driftsatt.
+- iSH på ägarens **iPhone** rapporterade 171,5 GiB tillgängligt (avrundat).
+  Backupmålet är `/root/JARVIS-backuper/<backup-id>/` på denna enhet; iPad krävs
+  inte. Ingen backupmapp eller backup har skapats genom dessa kontroller.
+- 22 oktober: `sameUserProcReadable: true`, `processInspectionErrors: []`,
+  `databaseHolderProcesses: 1`. Behörighetskontrollen passerade. Ett öppet
+  DB-handtag är väntat under drift; backup/restore kräver fortfarande noll
+  DB-hållande processer i det särskilda underhållsläget.
+- Frankfurt-fingeravtrycket matchades mot Renders officiella SSH-dokumentation
+  före acceptans. Klienten visade också `client_global_hostkeys_private_confirm:
+  server gave bad signature for ED25519 key 0`. SSH/SFTP fungerade trots detta;
+  orsaken är inte fastställd. Ingen host-key-kontroll har stängts av.
+- En interaktiv session bröts med `Broken pipe`. De efterföljande direkta
+  SSH-kommandona lyckades. Håll iSH i förgrunden och kör varje kontroll som ett
+  komplett fjärrkommando; en lokal `localhost`-prompt är inte Render.
+
+**Kvar före produktionsbeslut:** bekräfta skärmlås med kod på backuptelefonen.
+Därefter kan det redan dokumenterade förslaget läggas fram för separat beslut.
+Installerat driftkit, produktionsbackup, ändrade driftinställningar, merge och
+deployment är fortfarande inte godkända eller utförda av detta arbete.
+En verklig backup med verifierad hash på båda målen krävs före migration.
+Fysisk Safari kontrolleras efter separat godkänd deployment.
+
+Föreslagen kodrelease/driftkit är oförändrad:
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`. Återställning använder schema-1-backup
+med `a21a3a9b4877ce31afc8eec28ae5557854f01b01`, under det exakta
+underhållsstartkommando som anges i [körplanen](RELEASE_RUNBOOK.md).
+Endast dokumentation ändrades i denna uppföljning; inga testsviter upprepades.
+
 Förberedd 14 oktober, kompletterad med verifierad runtime 15 oktober 2026 för
 [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7).
 **Detta är ett granskningsbart förslag. Produktionsbackup, inställningsändringar,
@@ -9,8 +50,9 @@ godkända. Endast läsande drift- och filsystemsmetadata har kontrollerats.**
 Driftverktygen är färdiga och den befintliga syntetiska återställningsövningen
 har återanvänts med dem. Aktiv `DATABASE_PATH`, Node och ledigt diskutrymme är
 verifierade. Användaren avläste Auto Sync = Yes den 19 oktober 2026. Före
-produktionsstart återstår processinspektionens åtkomst samt ägarens
-SSH/SFTP-åtkomst och privata iPad-mål.
+produktionsstart återstår bekräftat skärmlås med kod på backuptelefonen
+och separat produktionsbeslut. SSH/SFTP och processåtkomst är nu verifierade
+genom användarunderlaget ovan.
 Gamla loggar och fysisk Safari är inte förhandsblockerare. Safari kontrolleras
 efter separat godkänd deployment. Backup ska dessutom vara verifierad på båda
 målen innan merge eller migration tillåts.
@@ -89,16 +131,14 @@ att passera. Avvikelse innebär stopp och ett nytt konkret förslag.
 Connectorn saknar dessa runtimefunktioner, men den godkända webbläsarvägen
 fungerade 15 oktober och ersätter det äldre 502-hindret i rapporteringen.
 Sessionen avslutades senare. Ett nytt säkert inloggningsförsök gav timeout;
-en ny kontroll av tjänstesidan visade inloggning. Resultatet av den påbörjade
-processkontrollen är fortfarande okänt. Den 19 oktober svarade användaren Yes
+en ny kontroll av tjänstesidan visade inloggning. Resultatet av den då påbörjade
+processkontrollen saknades; SSH-kontrollen 22 oktober ovan ersätter detta hinder. Den 19 oktober svarade användaren Yes
 på den uttryckliga frågan om Blueprintens Auto Sync. Detta är användarens
 avläsning, inte en ny connector-/webbläsarkontroll eller ett ändringsgodkännande.
 Det gör inte de tidigare verifierade runtimevärdena okända igen.
 
-Nästa enda dashboardåtgärd: öppna **jarvis-private → Shell** och bekräfta att
-terminalen visas. Ändra inga inställningar. När terminalen är tillgänglig
-kontrolleras processåtkomst med följande läsande kommando, utan att öppna någon
-databasfil:
+Processåtkomsten kontrollerades framgångsrikt via SSH den 22 oktober.
+Följande är referenskommandot för läsande omkontroll, utan databasläsning:
 
 ```sh
 node <<'NODE'
@@ -133,12 +173,12 @@ Förslaget använder två kopior:
 
 1. **Render:** `/var/data/jarvis-backups/<backup-id>/snapshot.db` och
    `manifest.json`, katalog 0700, stängda filer 0400. Inget ligger i webbroten.
-2. **Utanför Render:** ägarens lösenkodsskyddade iPad, i den kostnadsfria
+2. **Utanför Render:** ägarens iPhone (skärmlås med kod ska bekräftas), i den kostnadsfria
    [iSH-appens](https://ish.app/) lokala filsystem:
    **`/root/JARVIS-backuper/<backup-id>/`**. Ingen delningslänk, publik fil,
    GitHub-uppladdning, ChatGPT-uppladdning eller iCloud Drive-mapp används.
-   Detta är ett konkret föreslaget mål; appinstallation, utrymme och åtkomst på
-   enheten har ännu inte verifierats. iSH ska hållas i förgrunden under överföring.
+   Appinstallation, utrymme och SSH/SFTP-åtkomst är verifierade genom
+   användarunderlaget ovan; enhetslåset återstår att bekräfta. iSH ska hållas i förgrunden under överföring.
 
 Ägaren förvarar filerna och eventuell återställningsjournal privat. Behåll båda
 kopiorna minst 30 dagar efter godkänd release/Safari-kontroll, eller längre vid
@@ -153,14 +193,12 @@ backup ska inte exporteras från enheten till chatten.
 - Tjänsten styrs av Blueprint `exs-db1vjsu7bikc73bt8gdg`: rätt att tillfälligt
   stänga av dess Auto Sync och senare återställa Yes, det användaravlästa
   ursprungsvärdet. Bekräfta att det är oförändrat vid det godkända fönstrets start.
-- Ägarens SSH-nyckel på iPad och dess **publika** nyckel registrerad i Render.
-  Shell visade "To make SSH available, add an SSH public key". Ingen fungerande
-  nyckel/SFTP-session har verifierats. Registrering, om den behövs, ingår i ett
-  senare uttryckligt åtkomstbeslut. Den privata nyckeln och lösenfrasen lämnar
-  inte enheten.
+- Ägarens SSH-nyckel finns på iPhone och publik nyckel är registrerad enligt
+  användaren; lyckad SSH/SFTP-anslutning syns i underlaget. Privat nyckel och
+  lösenfras lämnar inte enheten.
 - GitHub-rättighet att granska och senare merga PR #7; merge är separat godkännande.
 
-På iPad kan `apk add openssh-client` i iSH installera klienten. Återanvänd en
+På iPhone kan `apk add openssh-client` i iSH installera klienten. Återanvänd en
 befintlig godkänd SSH-nyckel. Om ingen finns, skapa först `/root/.ssh` med
 `mkdir -p /root/.ssh` och `chmod 700 /root/.ssh`. Kör sedan
 `ssh-keygen -t ed25519 -f /root/.ssh/jarvis_render_ed25519`, med privat lösenfras,
@@ -265,7 +303,7 @@ NODE
 ## Efter separat godkännande: backup och release i ordning
 
 1. **Innan merge:** bekräfta oförändrade runtimevärden, godkänd processinspektion,
-   iPad-målet och fungerande SSH/SFTP. På iPad: kontrollera ledigt utrymme med
+   iPhone-målet och fungerande SSH/SFTP. På iPhone: kontrollera ledigt utrymme med
    `df -k /root` och prova endast anslutning/`pwd`/`bye` före backupbeslutet;
    inga databasfiler hämtas i åtkomstkontrollen.
    Läs aktuell SHA en gång till. Om main/aktiv kod har ändrats från basen: stopp.
@@ -301,8 +339,8 @@ NODE
    till DELETE-journal, stänger den och beräknar SHA-256. Utdata innehåller bara
    backup-ID, hash, byteantal och schemanummer. Bevara ID/hash i privat journal.
    Detaljmanifestet och DB:n ska aldrig bifogas PR/chatten.
-5. För över båda filerna direkt till iPad. Ersätt `BACKUP-ID` nedan med det
-   returnerade `backup-...`-värdet. Sätt en shellvariabel på iPad (icke-hemlig),
+5. För över båda filerna direkt till iPhone. Ersätt `BACKUP-ID` nedan med det
+   returnerade `backup-...`-värdet. Sätt en shellvariabel på iPhone (icke-hemlig),
    skapa mappen och öppna SFTP med den godkända nyckeln:
 
    ```sh
@@ -321,7 +359,7 @@ NODE
    bye
    ```
 
-   Kontrollera på iPad, med den 64 tecken långa SHA-256 som backupkommandot gav:
+   Kontrollera på iPhone, med den 64 tecken långa SHA-256 som backupkommandot gav:
 
    ```sh
    cd "/root/JARVIS-backuper/$JARVIS_BACKUP_ID"
@@ -469,7 +507,7 @@ bevara felläget och be ägaren besluta om databortfall eller framåtriktad fix;
    det behövs och håll tjänsten i underhåll. Skapa med Shell `umask 077` och
    `mkdir -m 700 /var/data/jarvis-backups/BACKUP-ID` (föräldern 0700). Om katalogen
    redan finns: verifiera befintlig kopia först, skriv inte över originalet.
-   Återför `snapshot.db` och `manifest.json` från samma iPad-mapp med SFTP `put`
+   Återför `snapshot.db` och `manifest.json` från samma iPhone-mapp med SFTP `put`
    till den nya katalogen, sätt båda till 0400 och kör `verify`/`restore` ovan.
    Ingen DB-fil mellanlagras i ChatGPT eller GitHub. En faktiskt förlorad disk
    kräver separat åtgärdsbeslut; denna plan skapar inte en ersättningsresurs.

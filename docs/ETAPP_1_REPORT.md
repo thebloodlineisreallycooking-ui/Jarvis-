@@ -1,5 +1,46 @@
 # Etapp 1 — implementation and verification report
 
+## Åtkomstkontroll 22 oktober 2026 — aktuell status
+
+Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är
+användartillhandahållna terminalbilder från iSH på iPhone, inte en ny direkt
+connectoravläsning. Inga bilder, nycklar, loggfiler eller databaser sparas i repot.
+
+- 21 oktober: SSH inloggning och separat SFTP `pwd`/`bye` lyckades mot
+  `srv-db1vle3bc2fs73em1t30@ssh.frankfurt.render.com`. SFTP visade
+  `/opt/render/project/src`; inga filer överfördes. Användaren hade registrerat
+  sin publika SSH-nyckel själv. Privat nyckel/lösenfras stannar på enheten.
+- Runtime: rätt service-ID, commit `a21a3a9b4877ce31afc8eec28ae5557854f01b01`,
+  `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`. `df -h` visade
+  `/var/data` monterad, 958 MiB tillgängligt (avrundat). PR #7 var inte driftsatt.
+- iSH på ägarens **iPhone** rapporterade 171,5 GiB tillgängligt (avrundat).
+  Backupmålet är `/root/JARVIS-backuper/<backup-id>/` på denna enhet; iPad krävs
+  inte. Ingen backupmapp eller backup har skapats genom dessa kontroller.
+- 22 oktober: `sameUserProcReadable: true`, `processInspectionErrors: []`,
+  `databaseHolderProcesses: 1`. Behörighetskontrollen passerade. Ett öppet
+  DB-handtag är väntat under drift; backup/restore kräver fortfarande noll
+  DB-hållande processer i det särskilda underhållsläget.
+- Frankfurt-fingeravtrycket matchades mot Renders officiella SSH-dokumentation
+  före acceptans. Klienten visade också `client_global_hostkeys_private_confirm:
+  server gave bad signature for ED25519 key 0`. SSH/SFTP fungerade trots detta;
+  orsaken är inte fastställd. Ingen host-key-kontroll har stängts av.
+- En interaktiv session bröts med `Broken pipe`. De efterföljande direkta
+  SSH-kommandona lyckades. Håll iSH i förgrunden och kör varje kontroll som ett
+  komplett fjärrkommando; en lokal `localhost`-prompt är inte Render.
+
+**Kvar före produktionsbeslut:** bekräfta skärmlås med kod på backuptelefonen.
+Därefter kan det redan dokumenterade förslaget läggas fram för separat beslut.
+Installerat driftkit, produktionsbackup, ändrade driftinställningar, merge och
+deployment är fortfarande inte godkända eller utförda av detta arbete.
+En verklig backup med verifierad hash på båda målen krävs före migration.
+Fysisk Safari kontrolleras efter separat godkänd deployment.
+
+Föreslagen kodrelease/driftkit är oförändrad:
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`. Återställning använder schema-1-backup
+med `a21a3a9b4877ce31afc8eec28ae5557854f01b01`, under det exakta
+underhållsstartkommando som anges i [körplanen](RELEASE_RUNBOOK.md).
+Endast dokumentation ändrades i denna uppföljning; inga testsviter upprepades.
+
 Review date: 19 October 2026 (user-reported Auto Sync follow-up; application
 verification completed earlier). Code changes are confined to **STABIL GRUND**.
 The existing dark three-view interface and task-capture functionality remain.
