@@ -11,6 +11,10 @@ gammal live-commit, `npm start`, auto-deploy på och underhåll av. Säker
 dashboardinloggning returnerade `declined`; inga produktionsändringar utfördes.
 Ingen backup, migration, merge eller PR-deployment har körts. PR #7 förblir draft.
 Endast dokumentation ändras här; full testsvit upprepas inte.
+Kontrollpunkten sparades externt som `ebd38a32ca5066d25d73d6bc36b3ffe0fedba94c`.
+Efter ny fortsättningsinstruktion återupptogs säker inloggning via GitHub/Google;
+Google-kontovalet returnerade `declined`. Driftläget är fortsatt oförändrat av
+detta arbete. Nästa manuella steg är en aktuell avläsning av Blueprint Auto Sync.
 
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 

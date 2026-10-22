@@ -63,6 +63,11 @@ Dashboarden visade inloggningssidan. Det stödda säkra inloggningsflödet retur
 `declined`; inget nytt inloggningsförsök eller alternativ credentialflöde gjordes.
 Appen har inte stängts av medan åtkomsten saknas.
 
+Efter ägarens nya instruktion att fortsätta återupptogs det säkra flödet:
+Render → GitHub → Google. Kontovalet hos Google returnerade åter `declined`.
+Inloggning till Render är inte verifierad och inga produktionsåtgärder följde.
+Ingen privat nyckel, lösenfras eller lösenord begärdes i chatten.
+
 Nästa säkra manuella steg är att läsa aktuell **Settings → Auto Sync** på
 Blueprint `exs-db1vjsu7bikc73bt8gdg`, utan ändring, så ursprungsvärdet registreras.
 Fortsätt sedan den redan godkända körplanen med en verifierad åtgärd åt gången.
