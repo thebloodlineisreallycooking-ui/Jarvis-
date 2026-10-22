@@ -1,5 +1,17 @@
 # Progress
 
+## Produktionsbackup godkänd, väntar på dashboardåtkomst — 22 oktober 2026
+
+Ägaren har godkänt driftkit, paus av automatiken, särskilt underhåll och verifierad
+backup på Render/iPhone; kodlås på telefonen är bekräftat. Tidigare besked nedan
+om saknat godkännande eller enhetslås är därmed historiska.
+[Sanerad kontrollpunkt](PRODUCTION_BACKUP_STATUS.md) dokumenterar exakt scope,
+kontrollerade källhashar, driftläge och nästa steg. Connectorn visar fortfarande
+gammal live-commit, `npm start`, auto-deploy på och underhåll av. Säker
+dashboardinloggning returnerade `declined`; inga produktionsändringar utfördes.
+Ingen backup, migration, merge eller PR-deployment har körts. PR #7 förblir draft.
+Endast dokumentation ändras här; full testsvit upprepas inte.
+
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 
 Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är

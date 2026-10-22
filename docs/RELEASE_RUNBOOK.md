@@ -1,5 +1,16 @@
 # Etapp 1 — körplan för backup, release och återställning
 
+## Aktivt backupgodkännande 22 oktober 2026
+
+Ägaren har nu godkänt driftkit, pausad automatik, särskilt underhåll och backup
+på Render samt iSH. Skärmlås med kod är bekräftat. Äldre formuleringar nedan om
+saknat backupgodkännande eller enhetslås är historiska och ersätts av
+[aktuell produktionsstatus](PRODUCTION_BACKUP_STATUS.md).
+Backup är ännu inte utförd: dashboardens säkra inloggning returnerade `declined`.
+Appen är kvar i normal drift. Merge, PR-deployment, migration och återställning
+är inte godkända. Stanna efter verifierad backup på båda målen med underhåll
+och pausad automatik kvar; fortsätt inte körplanens releasesteg.
+
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 
 Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är
