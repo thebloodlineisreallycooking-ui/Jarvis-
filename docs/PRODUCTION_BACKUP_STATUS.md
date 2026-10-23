@@ -1,6 +1,34 @@
 # Produktionsbackup — kontrollpunkt 23 oktober 2026
 
-## Render Maintenance Mode på — skrivstopp och backup återstår
+## Underhållsstartkommando sparat — aktivering och backup återstår
+
+Efter ägarens dashboardbild verifierade connectorn hela Start Command:
+
+```sh
+node /var/data/jarvis-ops/dade9b6c16df3e0ec61484e0ff10dd558744d695/maintenance.mjs
+```
+
+Tjänstens inställning uppdaterades `2026-10-23T12:45:45.825123Z`
+(14:45 svensk tid). Render Maintenance Mode är fortsatt på och auto-deploy
+Off. Byggkommando, main-branch, healthcheck och disk är oförändrade.
+De fem senaste deployresultaten visar ingen ny, pågående eller köad deployment;
+den gamla live-deployen är fortfarande `dep-db2k2kmi0phs738s20k0` från 6 oktober,
+med `a21a3a9b4877ce31afc8eec28ae5557854f01b01`. Sparad inställning bevisar därför
+inte att underhållsprogrammet kör eller att den gamla appens processer stoppats.
+
+Nästa godkända steg enligt körplanens steg 3 är **Manual Deploy → Deploy a
+specific commit** med exakt `a21a3a9b4877ce31afc8eec28ae5557854f01b01`.
+Det aktiverar underhållsstartprogrammet med den gamla koden. Connectorns
+deployverktyg saknar argument för specifik commit, så denna åtgärd sker via
+ägarens dashboard. Vänta på live-status och kör sedan den privata
+`client.mjs status`-kontrollen via befintlig SSH innan backup.
+
+Webappen är fortfarande stängd för publika anrop. Verkligt skrivstopp är ännu
+inte verifierat. Ingen backup eller migration har körts. PR #7 är fortsatt
+öppen, draft, omergad och odriftsatt. Blueprint Auto Sync No är tidigare
+ägarbekräftat. Kitinstallationen ska inte upprepas.
+
+## Render Maintenance Mode på — tidigare kontrollpunkt samma dag
 
 Efter ägarens bekräftelse den 23 oktober verifierade Render-connectorn
 `maintenanceMode.enabled: true` på rätt tjänst. Tjänstens uppdateringstid är

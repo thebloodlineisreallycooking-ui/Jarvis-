@@ -1,5 +1,17 @@
 # Progress
 
+## Produktionsbackup: underhållsstartkommando sparat — 23 oktober 2026
+
+Connectorn verifierar exakt låst `maintenance.mjs` som Start Command efter
+ägarens dashboardändring kl. 14:45 svensk tid. Render Maintenance Mode är på,
+auto-deploy Off och övriga driftinställningar oförändrade. Ingen ny deployment
+har startat enligt senaste fem resultat; den gamla live-deployen kvarstår.
+Aktivering med exakt gamla committen via Manual Deploy återstår, följt av
+privat statuskontroll och verifierat skrivstopp. Backup är ännu inte skapad.
+PR #7 är fortsatt draft och omergad. [Driftstatus](PRODUCTION_BACKUP_STATUS.md)
+anger nästa steg och skiljer sparad inställning från körande process.
+Endast dokumentation ändras; full testsvit upprepas inte.
+
 ## Produktionsbackup: Render Maintenance Mode på — 23 oktober 2026
 
 Ägarens bekräftelse följdes av direkt connectorverifiering:

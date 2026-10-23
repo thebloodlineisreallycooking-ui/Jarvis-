@@ -10,9 +10,11 @@ Driftkitet är installerat enligt ägarens iSH-underlag den 23 oktober; upprepa
 inte installationen. Auto Sync är pausad enligt ägaren och auto-deploy Off är
 direkt verifierat. Render Maintenance Mode är nu på enligt connectoravläsning
 efter ägarens bekräftelse den 23 oktober (inställning uppdaterad 12:18 svensk tid).
-Webappen är stängd för publika anrop. Backup och särskilt underhållsstartprogram
-återstår; `npm start` kvarstår och verkligt skrivstopp är ännu inte verifierat.
-Nästa steg är det låsta underhållsstartkommandot i steg 3, med gamla revisionen.
+Webappen är stängd för publika anrop. Det exakta låsta underhållsstartkommandot
+är nu sparat och direkt verifierat (inställning uppdaterad 14:45 svensk tid).
+Ingen ny deployment har startat enligt senaste fem resultat. Nästa steg är
+Manual Deploy av exakt gamla revisionen enligt steg 3, därefter privat status
+och verifierat skrivstopp före backup. Inställningen ensam bevisar inte skrivstopp.
 Arbetet fortsätter via ägarens dashboard och iSH.
 Merge, PR-deployment, migration och återställning
 är inte godkända. Stanna efter verifierad backup på båda målen med underhåll
