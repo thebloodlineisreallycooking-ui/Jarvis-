@@ -1,6 +1,33 @@
 # Produktionsbackup — kontrollpunkt 23 oktober 2026
 
-## Underhållsstartkommando sparat — aktivering och backup återstår
+## Underhållsprogrammet live — privat runtimekontroll och backup återstår
+
+Ägaren startade den godkända manuella deploymenten med gamla revisionen.
+Render-connectorn verifierar `dep-dbdnalcs728c73cic4qg`, commit
+`a21a3a9b4877ce31afc8eec28ae5557854f01b01`, som **live** sedan
+`2026-10-23T14:56:03.179969Z` (16:56 svensk tid). Den tidigare live-deployen
+`dep-db2k2kmi0phs738s20k0` är nu `deactivated`.
+
+En riktad runtimeavläsning visar att underhållsprogrammet rapporterade klar
+start kl. 16:55:57 på instans `srv-db1vle3bc2fs73em1t30-6vg4j`, med app och
+migrationer ej startade. Hela startkommandot är oförändrat och korrekt.
+Render Maintenance Mode är fortsatt på, auto-deploy Off och inga konkurrerande
+deployer syns bland de senaste fem resultaten. Blueprint Auto Sync No är
+tidigare ägarbekräftat. Webappen förblir stängd för publika anrop.
+
+Nästa steg är `client.mjs status` via befintlig SSH/iSH för rätt tjänst,
+gammal `deployedCommit`, `applicationStarted: false`, `busy: false` och
+`restorePending: false`. Statuskommandot läser inte databasinnehåll.
+Backupoperationens processgrind måste därefter bekräfta att ingen annan process
+håller databasen eller dess sidofiler öppna innan SQLite-backupen börjar.
+Denna processgrind och databasschemat är ännu inte kontrollerade på nya instansen.
+
+Ingen backup har skapats eller överförts i detta steg. PR #7 är fortsatt
+öppen, draft och omergad; PR-koden är inte driftsatt. Inga migrationer eller
+återställningar har körts. Installation och underhållsdeployment ska inte
+upprepas. Bara sanerad status sparas här, inga loggfiler eller skärmbilder.
+
+## Underhållsstartkommando sparat — tidigare kontrollpunkt samma dag
 
 Efter ägarens dashboardbild verifierade connectorn hela Start Command:
 

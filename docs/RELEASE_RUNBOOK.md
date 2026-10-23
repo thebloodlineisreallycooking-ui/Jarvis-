@@ -12,9 +12,11 @@ direkt verifierat. Render Maintenance Mode är nu på enligt connectoravläsning
 efter ägarens bekräftelse den 23 oktober (inställning uppdaterad 12:18 svensk tid).
 Webappen är stängd för publika anrop. Det exakta låsta underhållsstartkommandot
 är nu sparat och direkt verifierat (inställning uppdaterad 14:45 svensk tid).
-Ingen ny deployment har startat enligt senaste fem resultat. Nästa steg är
-Manual Deploy av exakt gamla revisionen enligt steg 3, därefter privat status
-och verifierat skrivstopp före backup. Inställningen ensam bevisar inte skrivstopp.
+Den manuella underhållsdeploymenten av gamla revisionen är nu live sedan 16:56
+svensk tid, `dep-dbdnalcs728c73cic4qg`. Runtimeunderlag bekräftar start av
+underhållsprogrammet utan app eller migrationer; tidigare deploy är avaktiverad.
+Nästa steg är privat `client.mjs status` enligt steg 3. Backupverktygets
+processgrind och schema-/integritetskontroller återstår. Upprepa inte deploymenten.
 Arbetet fortsätter via ägarens dashboard och iSH.
 Merge, PR-deployment, migration och återställning
 är inte godkända. Stanna efter verifierad backup på båda målen med underhåll

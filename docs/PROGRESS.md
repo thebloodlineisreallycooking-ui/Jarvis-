@@ -1,5 +1,17 @@
 # Progress
 
+## Produktionsbackup: underhållsprogrammet live — 23 oktober 2026
+
+Den manuella deploymenten `dep-dbdnalcs728c73cic4qg` av gamla committen
+`a21a3a9b4877ce31afc8eec28ae5557854f01b01` är direkt verifierad live 16:56
+svensk tid. Tidigare instans/deploy är avaktiverad; runtimeunderlaget bekräftar
+underhållsprogrammet och att app/migrationer inte startats. Maintenance Mode
+är på och auto-deploy Off. Nästa steg är privat status via iSH och sedan
+backupverktygets process-/schema-/integritetskontroller. Ingen backup finns
+ännu att rapportera och PR #7 är fortsatt omergad/odriftsatt.
+Se [sanerad driftstatus](PRODUCTION_BACKUP_STATUS.md). Endast dokumentation
+ändras; ingen full testsvit upprepas.
+
 ## Produktionsbackup: underhållsstartkommando sparat — 23 oktober 2026
 
 Connectorn verifierar exakt låst `maintenance.mjs` som Start Command efter
