@@ -1,6 +1,31 @@
 # Produktionsbackup — kontrollpunkt 23 oktober 2026
 
-## Driftkit installerat — underhåll och backup återstår
+## Render Maintenance Mode på — skrivstopp och backup återstår
+
+Efter ägarens bekräftelse den 23 oktober verifierade Render-connectorn
+`maintenanceMode.enabled: true` på rätt tjänst. Tjänstens uppdateringstid är
+`2026-10-23T10:18:00.57773Z` (12:18 svensk tid). Webappen är nu stängd för
+publika anrop under det godkända avbrottet. Detta edge-läge stoppar inte
+applikationens processer: Start Command är fortfarande `npm start`.
+
+Auto-deploy är fortsatt Off. Ingen pågående eller köad deployment syns i de
+fem senaste resultaten. Live-revision och GitHubs main är fortfarande
+`a21a3a9b4877ce31afc8eec28ae5557854f01b01`; PR #7 är öppen, draft och omergad.
+Blueprint Auto Sync No är tidigare användarbekräftat.
+
+Nästa redan godkända steg är att ersätta Start Command med exakt:
+
+```sh
+node /var/data/jarvis-ops/dade9b6c16df3e0ec61484e0ff10dd558744d695/maintenance.mjs
+```
+
+Detta ska starta det installerade underhållsprogrammet med den gamla revisionen,
+utan app eller migrator. Vänta därefter på rätt live-instans och kontrollera
+status enligt körplanen. Verkligt skrivstopp är ännu inte verifierat. Ingen
+backup, migration, återställning eller PR-deployment har utförts i detta steg.
+Render Maintenance Mode ska lämnas på medan arbetet fortsätter.
+
+## Driftkit installerat — tidigare kontrollpunkt samma dag
 
 Användarens iSH-underlag från 23 oktober kl. 11:24 visar att den granskade
 SSH-installationen avslutades med `Pinned operations kit installed; application

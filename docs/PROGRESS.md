@@ -1,5 +1,16 @@
 # Progress
 
+## Produktionsbackup: Render Maintenance Mode på — 23 oktober 2026
+
+Ägarens bekräftelse följdes av direkt connectorverifiering:
+`maintenanceMode.enabled: true`, uppdaterat 12:18 svensk tid. Webappen är nu
+stängd för publika anrop under godkänt underhåll. `npm start` kvarstår, så
+skrivstopp är ännu inte verifierat. Nästa steg är det låsta underhållsstartkommandot
+och kontroll av rätt live-instans. Auto-deploy Off, oförändrad gammal live/main-SHA,
+inga pågående/köade deployer i senaste fem resultat och omergad draft-PR #7 är
+verifierade. Backup återstår. Se [aktuell driftstatus](PRODUCTION_BACKUP_STATUS.md).
+Endast dokumentation ändras; ingen full testsvit upprepas.
+
 ## Produktionsbackup: driftkit installerat — 23 oktober 2026
 
 Ägarens iSH-underlag kl. 11:24 bekräftar lyckad installation av de tre låsta

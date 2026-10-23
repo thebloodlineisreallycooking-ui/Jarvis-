@@ -8,8 +8,12 @@ saknat backupgodkännande eller enhetslås är historiska och ersätts av
 [aktuell produktionsstatus](PRODUCTION_BACKUP_STATUS.md).
 Driftkitet är installerat enligt ägarens iSH-underlag den 23 oktober; upprepa
 inte installationen. Auto Sync är pausad enligt ägaren och auto-deploy Off är
-direkt verifierat. Backup och särskilt underhåll återstår; appen har kvar sitt
-ordinarie startkommando. Arbetet fortsätter via ägarens dashboard och iSH.
+direkt verifierat. Render Maintenance Mode är nu på enligt connectoravläsning
+efter ägarens bekräftelse den 23 oktober (inställning uppdaterad 12:18 svensk tid).
+Webappen är stängd för publika anrop. Backup och särskilt underhållsstartprogram
+återstår; `npm start` kvarstår och verkligt skrivstopp är ännu inte verifierat.
+Nästa steg är det låsta underhållsstartkommandot i steg 3, med gamla revisionen.
+Arbetet fortsätter via ägarens dashboard och iSH.
 Merge, PR-deployment, migration och återställning
 är inte godkända. Stanna efter verifierad backup på båda målen med underhåll
 och pausad automatik kvar; fortsätt inte körplanens releasesteg.
