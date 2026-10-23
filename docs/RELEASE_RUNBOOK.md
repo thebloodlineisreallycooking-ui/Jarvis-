@@ -15,8 +15,11 @@ Webappen är stängd för publika anrop. Det exakta låsta underhållsstartkomma
 Den manuella underhållsdeploymenten av gamla revisionen är nu live sedan 16:56
 svensk tid, `dep-dbdnalcs728c73cic4qg`. Runtimeunderlag bekräftar start av
 underhållsprogrammet utan app eller migrationer; tidigare deploy är avaktiverad.
-Nästa steg är privat `client.mjs status` enligt steg 3. Backupverktygets
-processgrind och schema-/integritetskontroller återstår. Upprepa inte deploymenten.
+Privat `client.mjs status` passerade enligt ägarens iSH-underlag kl. 17:37:
+rätt tjänst/revision/databasväg, app ej startad, ingen väntande återställning
+eller aktiv operation. Node är nu v24.22.1, ledigt utrymme 1003753472 byte.
+Nästa steg är backupkommandot i steg 4 med dess processgrind och
+schema-/integritetskontroller. Upprepa inte installation eller deployment.
 Arbetet fortsätter via ägarens dashboard och iSH.
 Merge, PR-deployment, migration och återställning
 är inte godkända. Stanna efter verifierad backup på båda målen med underhåll

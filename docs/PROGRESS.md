@@ -1,5 +1,16 @@
 # Progress
 
+## Produktionsbackup: privat runtimekontroll godkänd — 23 oktober 2026
+
+Ägarens iSH-underlag kl. 17:37 bekräftar rätt tjänst, gammal revision och
+databasväg, `applicationStarted: false`, `restorePending: false` och
+`busy: false`. Ny runtime är Node v24.22.1 och ledigt utrymme 1003753472 byte.
+Connectorn bekräftar oförändrat underhållsläge, auto-deploy Off och samma
+live-deploy. Nästa steg är det godkända backupkommandot med inbyggd kontroll
+av DB-handtag, schema, utrymme och databas-/kopieintegritet. Backup och separat
+iSH-kopia återstår. Se [driftstatus](PRODUCTION_BACKUP_STATUS.md).
+Endast dokumentation ändras; full testsvit upprepas inte.
+
 ## Produktionsbackup: underhållsprogrammet live — 23 oktober 2026
 
 Den manuella deploymenten `dep-dbdnalcs728c73cic4qg` av gamla committen

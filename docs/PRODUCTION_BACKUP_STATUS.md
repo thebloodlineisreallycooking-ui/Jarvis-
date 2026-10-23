@@ -1,6 +1,38 @@
 # Produktionsbackup — kontrollpunkt 23 oktober 2026
 
-## Underhållsprogrammet live — privat runtimekontroll och backup återstår
+## Privat runtimekontroll godkänd — backup återstår
+
+Ägarens iSH-underlag den 23 oktober kl. 17:37 visar ett lyckat
+`client.mjs status` mot den nya underhållsinstansen:
+
+| Kontroll | Observerat värde |
+| --- | --- |
+| serviceId | `srv-db1vle3bc2fs73em1t30` |
+| deployedCommit | `a21a3a9b4877ce31afc8eec28ae5557854f01b01` |
+| databasePath | `/var/data/jarvis.db` |
+| node | `v24.22.1` |
+| availableBytes | `1003753472` |
+| applicationStarted | `false` |
+| restorePending | `false` |
+| busy | `false` |
+
+Detta är användartillhandahållet runtimeunderlag. Node-versionen ersätter den
+tidigare observationen v24.21.0 och ligger inom projektets deklarerade intervall.
+Den återkommande SSH-hostkeys-varningen syntes, men kommandot returnerade
+status och avslutades normalt. Ingen host-key-kontroll har ändrats.
+
+Efter underlaget verifierade connectorn samma live-deploy, exakt underhållsstart,
+Maintenance Mode på och auto-deploy Off; inga pågående/köade deployer syns bland
+de fem senaste resultaten. PR #7 är fortfarande öppen, draft och omergad.
+
+Nästa steg är det redan godkända `client.mjs backup` med exakt service-ID enligt
+körplanen. Dess processkontroll körs innan databasen öppnas; schema 1, ägare,
+statusvärden, ledigt utrymme, integritet och foreign keys måste sedan passera.
+Statussvaret i sig innehåller ingen schema- eller processhandtagskontroll.
+Ingen backup eller iSH-kopia har ännu skapats/verifierats i detta arbete.
+Appen ska förbli i underhåll och automatiken fortsatt pausad.
+
+## Underhållsprogrammet live — tidigare kontrollpunkt samma dag
 
 Ägaren startade den godkända manuella deploymenten med gamla revisionen.
 Render-connectorn verifierar `dep-dbdnalcs728c73cic4qg`, commit
