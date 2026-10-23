@@ -1,5 +1,17 @@
 # Progress
 
+## Produktionsbackup: driftkit installerat — 23 oktober 2026
+
+Ägarens iSH-underlag kl. 11:24 bekräftar lyckad installation av de tre låsta
+driftfilerna från `dade9b6c16df3e0ec61484e0ff10dd558744d695`, med installerarens
+checksummegrind passerad. App/migrator startades inte av installern och databasen
+öppnades inte. Installation ska inte upprepas. Efterföljande connectoravläsning
+visar auto-deploy Off, gammal live-commit, `npm start` och underhåll av.
+Nästa steg är Render Maintenance Mode följt av det särskilda startprogrammet;
+verkligt skrivstopp måste verifieras före backup. Backup och privat iSH-kopia
+återstår. [Sanerad driftstatus](PRODUCTION_BACKUP_STATUS.md) skiljer på
+användarunderlag och direkt connectoravläsning. PR #7 är fortsatt omergad.
+
 ## Produktionsbackup: automatiken pausad — 23 oktober 2026
 
 Blueprint Auto Sync No är bekräftat av ägaren. Auto-deploy Off är dessutom

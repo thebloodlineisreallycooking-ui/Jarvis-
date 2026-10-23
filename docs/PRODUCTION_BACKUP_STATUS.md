@@ -1,5 +1,34 @@
 # Produktionsbackup — kontrollpunkt 23 oktober 2026
 
+## Driftkit installerat — underhåll och backup återstår
+
+Användarens iSH-underlag från 23 oktober kl. 11:24 visar att den granskade
+SSH-installationen avslutades med `Pinned operations kit installed; application
+unchanged.` Före installation visade separat SSH-kontroll rätt gamla commit,
+`DATABASE_PATH=/var/data/jarvis.db` och `KIT_MISSING`. Installationen ska inte
+upprepas. Resultatet är användartillhandahållet runtimeunderlag, inte en direkt
+Shell-körning av agenten.
+
+Installerad version är `dade9b6c16df3e0ec61484e0ff10dd558744d695`, med endast
+`client.mjs`, `database.mjs` och `maintenance.mjs` i
+`/var/data/jarvis-ops/dade9b6c16df3e0ec61484e0ff10dd558744d695/`.
+Installern kontrollerade de tre SHA-256-värdena nedan före atomisk installation,
+skapade katalogen med 0700 och filerna med 0400 samt synkroniserade till disk.
+Den öppnar ingen databas och startar varken applikation eller migrator.
+
+Efter installationsunderlaget verifierade connectorn fortfarande auto-deploy
+Off, `npm start`, Render Maintenance Mode av och samma gamla live-commit.
+Ingen pågående eller köad deployment syns bland de fem senaste resultaten.
+PR #7 är fortsatt öppen, draft och inte mergad. Ingen produktionsbackup,
+migration eller PR-deployment har genomförts. Appens underhållsavbrott har ännu
+inte startats. Blueprint Auto Sync No är fortsatt användarbekräftat.
+
+Nästa redan godkända steg är att aktivera Render Maintenance Mode på befintliga
+tjänsten, följt av det separata underhållsstartkommandot enligt körplanen.
+Edge-läget ensamt stoppar inte appens processer. Backup får köras först när
+underhållsprocessen är live och kontrollerna visar verkligt skrivstopp.
+Denna installationsstatus ersätter tidigare uppgifter nedan om saknat driftkit.
+
 ## Automatik pausad 23 oktober
 
 Ägaren bekräftade att Blueprint Auto Sync ändrats från Yes till No.
@@ -30,7 +59,7 @@ Merge/deployment av PR #7, migration, återställning, återaktivering av automa
 radering och nya betalda resurser ingår inte. Efter genomförd backup ska appen
 lämnas i det särskilda underhållsläget och detta tydligt rapporteras.
 
-## Senaste faktiskt observerade läge
+## Historiskt läge före produktionsåtgärderna den 22 oktober
 
 Läsande Render- och GitHub-kontroller utfördes den 22 oktober. Inga
 produktionsmutationer har utförts i denna kontrollpunkt.
@@ -57,7 +86,7 @@ iPhone-utrymme och läsbar processinspektion. Detta är tidigare observationer,
 inte nya runtimeavläsningar. En öppen DB-process observerades under normal drift;
 backupgrinden måste senare bekräfta noll skrivande/DB-hållande processer.
 
-## Verifierad verktygskälla, ännu inte installerad av detta arbete
+## Verktygsversion och verifierade checksummor
 
 Låst version: `dade9b6c16df3e0ec61484e0ff10dd558744d695`.
 GitHubs tree för denna commit jämfördes med lokala Git-blob-ID:n för alla tre
@@ -69,11 +98,11 @@ filerna. Lokal SHA-256 matchade körplanens låsta värden:
 | `database.mjs` | `4d4c9dc4cd49ee3a5df28242673673c9a33379d770419cb975a33e82a20f7392` |
 | `maintenance.mjs` | `e91843d664d38c57bd63a1e4e70a2d6284d476fcd3f4d7c98e60acf4548ddb68` |
 
-Detta verifierar källversionen, inte installation på Render. Installern i
-[körplanen](RELEASE_RUNBOOK.md) verifierar nedladdade bytes igen innan installation.
-Kontrollera eventuell redan befintlig installation innan något upprepas.
+Källversionen verifierades före installation. Installern i
+[körplanen](RELEASE_RUNBOOK.md) verifierade nedladdade bytes igen innan den
+rapporterade lyckad installation enligt användarunderlaget ovan.
 
-## Åtkomsthinder och nästa säkra steg
+## Historik: dashboardåtkomst och övergång till iSH
 
 Render-connectorn kan läsa tjänst och deployer men erbjuder inte ändring av
 Blueprint Auto Sync, startkommando eller auto-deploy och saknar runtime-Shell.
