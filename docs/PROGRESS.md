@@ -1,21 +1,333 @@
 # Progress
 
-- **Current phase:** Phase A — the three-view UI stage is implemented; hosting configuration remains prepared and no host resource has been created.
-- **Latest durable checkpoint:** Command Center, Voice Focus, and Agents & Knowledge remain separate responsive views with shared session, history, mode, and draft state. Production and test TypeScript environments are also separated, so the Render build does not resolve Vitest globals while tests retain scoped Vitest types.
-- **Branch verification:** The checkout history contains PR #1 and #2, and GitHub `main` at `00e8950` has been merged into the current branch. The resulting conflict resolutions preserve both the merged three-view UI and the Render build fix.
-- **Latest durable checkpoint:** Command Center, Voice Focus, and Agents & Knowledge are separate responsive views within one authenticated session. Conversation state, execution mode, and the text draft survive view changes.
-- **Branch verification:** The checkout history contains merge commit `f0b9ade` for PR #1, whose merged history contains PR #2 (`5265e4b`) and its verification commit (`90bfe64`). This checkout exposes branch `work`, not a local `main` ref; compare/merge the resulting PR into GitHub `main` before deployment.
-- **Actually works in source:** Responsive React interface; single-owner production login with HttpOnly Secure sessions; production registration disabled; runtime-validated command boundary; versioned SQLite migrations; per-account persisted tasks and conversation; explicit non-persisting Demo mode; English and Swedish task parsing.
-- **Hosting:** `render.yaml` uses a Starter Node service, managed HTTPS, a health endpoint, and a 1 GB disk at `/var/data`; `DATABASE_PATH=/var/data/jarvis.db` preserves SQLite across restarts and deployments.
-- **Cost checked:** Render's official pages were checked on 2 October 2026: US$7/month Starter compute plus US$0.25/month for 1 GB persistent storage, before tax and possible bandwidth overage. The user must review and approve payment in Render.
-- **Exact next step:** Merge this PR to `main`, connect the GitHub repository as a Render Blueprint from Safari, enter the two owner secrets, review the charge, deploy, and sign in at the generated HTTPS URL.
-- **Scope boundary:** No provider, voice, screen-control, native-companion, or other assistant feature was added. Demo and Live remain separate.
-- **UI truthfulness:** Voice Focus supports the shared text conversation but explicitly reports that microphone and speech providers are not configured. Agents & Knowledge provides the real persisted task list and explicit empty states for agents, providers, and knowledge sources. Telemetry is limited to authenticated/session state and client data actually loaded from the app; fabricated latency and connection claims were removed.
-- **UI verification:** A temporary production owner and separate temporary SQLite database were used in Chromium emulation. All three authenticated views were inspected at 390 px, 430 px, and 820 px widths with eight persisted tasks and sixteen conversation messages. Automated checks covered view navigation, retained text drafts, task rendering, long-history scrolling, and composer visibility. These were browser emulations, not physical iPhone or iPad tests. Nine screenshots were retained outside the repository under `/tmp/jarvis-review/` for review and were not committed.
-<
-## Checkpoints
+## Produktionsbackup: privat runtimekontroll godkänd — 23 oktober 2026
 
-- `jarvis-phase-a-foundation-initial.tar.gz` — initial source skeleton; checksum stored beside the archive in the workspace checkpoint directory.
-- Phase A verification — lockfile, typecheck, tests, build, and production smoke verification completed in the merged PR #2 history.
-- Hosting readiness — production owner provisioning, closed registration, Render persistent disk configuration, and deployment documentation added on the current branch.
-- UI stage — responsive Command Center, Voice Focus, and Agents & Knowledge views; shared session/draft/history; mobile navigation; clearer Live/Demo control; truthful empty states; and refined private login implemented without adding provider capabilities.
+Ägarens iSH-underlag kl. 17:37 bekräftar rätt tjänst, gammal revision och
+databasväg, `applicationStarted: false`, `restorePending: false` och
+`busy: false`. Ny runtime är Node v24.22.1 och ledigt utrymme 1003753472 byte.
+Connectorn bekräftar oförändrat underhållsläge, auto-deploy Off och samma
+live-deploy. Nästa steg är det godkända backupkommandot med inbyggd kontroll
+av DB-handtag, schema, utrymme och databas-/kopieintegritet. Backup och separat
+iSH-kopia återstår. Se [driftstatus](PRODUCTION_BACKUP_STATUS.md).
+Endast dokumentation ändras; full testsvit upprepas inte.
+
+## Produktionsbackup: underhållsprogrammet live — 23 oktober 2026
+
+Den manuella deploymenten `dep-dbdnalcs728c73cic4qg` av gamla committen
+`a21a3a9b4877ce31afc8eec28ae5557854f01b01` är direkt verifierad live 16:56
+svensk tid. Tidigare instans/deploy är avaktiverad; runtimeunderlaget bekräftar
+underhållsprogrammet och att app/migrationer inte startats. Maintenance Mode
+är på och auto-deploy Off. Nästa steg är privat status via iSH och sedan
+backupverktygets process-/schema-/integritetskontroller. Ingen backup finns
+ännu att rapportera och PR #7 är fortsatt omergad/odriftsatt.
+Se [sanerad driftstatus](PRODUCTION_BACKUP_STATUS.md). Endast dokumentation
+ändras; ingen full testsvit upprepas.
+
+## Produktionsbackup: underhållsstartkommando sparat — 23 oktober 2026
+
+Connectorn verifierar exakt låst `maintenance.mjs` som Start Command efter
+ägarens dashboardändring kl. 14:45 svensk tid. Render Maintenance Mode är på,
+auto-deploy Off och övriga driftinställningar oförändrade. Ingen ny deployment
+har startat enligt senaste fem resultat; den gamla live-deployen kvarstår.
+Aktivering med exakt gamla committen via Manual Deploy återstår, följt av
+privat statuskontroll och verifierat skrivstopp. Backup är ännu inte skapad.
+PR #7 är fortsatt draft och omergad. [Driftstatus](PRODUCTION_BACKUP_STATUS.md)
+anger nästa steg och skiljer sparad inställning från körande process.
+Endast dokumentation ändras; full testsvit upprepas inte.
+
+## Produktionsbackup: Render Maintenance Mode på — 23 oktober 2026
+
+Ägarens bekräftelse följdes av direkt connectorverifiering:
+`maintenanceMode.enabled: true`, uppdaterat 12:18 svensk tid. Webappen är nu
+stängd för publika anrop under godkänt underhåll. `npm start` kvarstår, så
+skrivstopp är ännu inte verifierat. Nästa steg är det låsta underhållsstartkommandot
+och kontroll av rätt live-instans. Auto-deploy Off, oförändrad gammal live/main-SHA,
+inga pågående/köade deployer i senaste fem resultat och omergad draft-PR #7 är
+verifierade. Backup återstår. Se [aktuell driftstatus](PRODUCTION_BACKUP_STATUS.md).
+Endast dokumentation ändras; ingen full testsvit upprepas.
+
+## Produktionsbackup: driftkit installerat — 23 oktober 2026
+
+Ägarens iSH-underlag kl. 11:24 bekräftar lyckad installation av de tre låsta
+driftfilerna från `dade9b6c16df3e0ec61484e0ff10dd558744d695`, med installerarens
+checksummegrind passerad. App/migrator startades inte av installern och databasen
+öppnades inte. Installation ska inte upprepas. Efterföljande connectoravläsning
+visar auto-deploy Off, gammal live-commit, `npm start` och underhåll av.
+Nästa steg är Render Maintenance Mode följt av det särskilda startprogrammet;
+verkligt skrivstopp måste verifieras före backup. Backup och privat iSH-kopia
+återstår. [Sanerad driftstatus](PRODUCTION_BACKUP_STATUS.md) skiljer på
+användarunderlag och direkt connectoravläsning. PR #7 är fortsatt omergad.
+
+## Produktionsbackup: automatiken pausad — 23 oktober 2026
+
+Blueprint Auto Sync No är bekräftat av ägaren. Auto-deploy Off är dessutom
+direkt verifierat med Render-connectorn på rätt tjänst. Gammal live-commit,
+`npm start` och underhåll av kvarstår; inga aktiva/köade deployer syns i de fem
+senaste resultaten. Backup och driftkitinstallation återstår. Nästa steg är
+en läsande kontroll via iSH före installation, utan databasöppning.
+Se [aktuell kontrollpunkt](PRODUCTION_BACKUP_STATUS.md). Inga kodändringar,
+migrationer, PR-deployer eller merge har utförts i denna uppföljning.
+
+## Produktionsbackup godkänd, väntar på dashboardåtkomst — 22 oktober 2026
+
+Ägaren har godkänt driftkit, paus av automatiken, särskilt underhåll och verifierad
+backup på Render/iPhone; kodlås på telefonen är bekräftat. Tidigare besked nedan
+om saknat godkännande eller enhetslås är därmed historiska.
+[Sanerad kontrollpunkt](PRODUCTION_BACKUP_STATUS.md) dokumenterar exakt scope,
+kontrollerade källhashar, driftläge och nästa steg. Connectorn visar fortfarande
+gammal live-commit, `npm start`, auto-deploy på och underhåll av. Säker
+dashboardinloggning returnerade `declined`; inga produktionsändringar utfördes.
+Ingen backup, migration, merge eller PR-deployment har körts. PR #7 förblir draft.
+Endast dokumentation ändras här; full testsvit upprepas inte.
+Kontrollpunkten sparades externt som `ebd38a32ca5066d25d73d6bc36b3ffe0fedba94c`.
+Efter ny fortsättningsinstruktion återupptogs säker inloggning via GitHub/Google;
+Google-kontovalet returnerade `declined`. Driftläget är fortsatt oförändrat av
+detta arbete. Nästa manuella steg är en aktuell avläsning av Blueprint Auto Sync.
+
+## Åtkomstkontroll 22 oktober 2026 — aktuell status
+
+Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är
+användartillhandahållna terminalbilder från iSH på iPhone, inte en ny direkt
+connectoravläsning. Inga bilder, nycklar, loggfiler eller databaser sparas i repot.
+
+- 21 oktober: SSH inloggning och separat SFTP `pwd`/`bye` lyckades mot
+  `srv-db1vle3bc2fs73em1t30@ssh.frankfurt.render.com`. SFTP visade
+  `/opt/render/project/src`; inga filer överfördes. Användaren hade registrerat
+  sin publika SSH-nyckel själv. Privat nyckel/lösenfras stannar på enheten.
+- Runtime: rätt service-ID, commit `a21a3a9b4877ce31afc8eec28ae5557854f01b01`,
+  `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`. `df -h` visade
+  `/var/data` monterad, 958 MiB tillgängligt (avrundat). PR #7 var inte driftsatt.
+- iSH på ägarens **iPhone** rapporterade 171,5 GiB tillgängligt (avrundat).
+  Backupmålet är `/root/JARVIS-backuper/<backup-id>/` på denna enhet; iPad krävs
+  inte. Ingen backupmapp eller backup har skapats genom dessa kontroller.
+- 22 oktober: `sameUserProcReadable: true`, `processInspectionErrors: []`,
+  `databaseHolderProcesses: 1`. Behörighetskontrollen passerade. Ett öppet
+  DB-handtag är väntat under drift; backup/restore kräver fortfarande noll
+  DB-hållande processer i det särskilda underhållsläget.
+- Frankfurt-fingeravtrycket matchades mot Renders officiella SSH-dokumentation
+  före acceptans. Klienten visade också `client_global_hostkeys_private_confirm:
+  server gave bad signature for ED25519 key 0`. SSH/SFTP fungerade trots detta;
+  orsaken är inte fastställd. Ingen host-key-kontroll har stängts av.
+- En interaktiv session bröts med `Broken pipe`. De efterföljande direkta
+  SSH-kommandona lyckades. Håll iSH i förgrunden och kör varje kontroll som ett
+  komplett fjärrkommando; en lokal `localhost`-prompt är inte Render.
+
+**Kvar före produktionsbeslut:** bekräfta skärmlås med kod på backuptelefonen.
+Därefter kan det redan dokumenterade förslaget läggas fram för separat beslut.
+Installerat driftkit, produktionsbackup, ändrade driftinställningar, merge och
+deployment är fortfarande inte godkända eller utförda av detta arbete.
+En verklig backup med verifierad hash på båda målen krävs före migration.
+Fysisk Safari kontrolleras efter separat godkänd deployment.
+
+Föreslagen kodrelease/driftkit är oförändrad:
+`dade9b6c16df3e0ec61484e0ff10dd558744d695`. Återställning använder schema-1-backup
+med `a21a3a9b4877ce31afc8eec28ae5557854f01b01`, under det exakta
+underhållsstartkommando som anges i [körplanen](RELEASE_RUNBOOK.md).
+Endast dokumentation ändrades i denna uppföljning; inga testsviter upprepades.
+
+## Current scope — Etapp 1: stable foundation
+
+Updated 19 October 2026. The requested source corrections and executable
+backup/restore preparations are implemented and locally verified. Actual Render
+DATABASE_PATH, Node and free space were verified on 15 October. The user
+reported Blueprint Auto Sync = Yes on 19 October. Remaining access gates are
+process-inspection permissions and the owner's private iPad/SFTP destination. Production operations remain unapproved and unperformed.
+Physical Safari belongs after separately approved deployment; unavailable old
+connector logs do not block release. No next-stage capabilities added.
+
+## Verified source and GitHub delivery
+
+- Full git clone based on `main` commit
+  `a21a3a9b4877ce31afc8eec28ae5557854f01b01` (merged PR #6).
+  GitHub and local refs matched; `main` was unchanged when rechecked on 15 October.
+- Separate work branch: `codex/etapp-1-stabil-grund`.
+- Existing PRs #4 and #5 were inspected as older hosting variants, not used as
+  the baseline. All requested files and `AGENTS.md` were read.
+- Verified GitHub checkpoint 1:
+  `6398df475760d98043ad6885e440555fe18df724` — deployment configuration,
+  message-order migration and exact command responses; 7 tests at that checkpoint.
+- Verified GitHub checkpoint 2:
+  `fbf4c261e67b27b8f28266f31ac2c23fe29768a3` — sessions, separate Live/Demo
+  state, accessibility fixes and 29 tests at that checkpoint.
+- Real draft [PR #7](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/7)
+  was created on 14 October. A previous attempt was not executed because the
+  automatic approval reviewer hit a usage limit; the same connector succeeded
+  after that limit cleared. Nothing was merged.
+- This final checkpoint adds the direct Node/tsx production start, immediate 401
+  cleanup when another fetch is still pending, guarded login lifetime, preserved
+  malformed-request status codes, two more regression tests, reproducible local
+  verification scripts and complete handoff documentation.
+- Git CLI push has no credentials. The authorized GitHub connector saves trees
+  and commits and advances only the work branch using an expected-head check.
+  Each delivered tree is compared with the local commit before completion.
+  The final response reports the actual verified PR head.
+- Final delivery check normalizes the browser review output guard so it also
+  rejects paths inside a repository directory with a trailing slash. An explicit
+  in-repository output attempt was rejected before artifacts/server creation.
+- Follow-up on the same branch/PR adds `docs/RENDER_OPERATIONS_REVIEW.md`, updates
+  setup/requirement status, and adds `scripts/verify-recovery.mjs`. Application
+  code remains at the previously verified revision `56978a89...`. This durable
+  checkpoint records observed Render data and an explicit no-go release decision.
+- Verified operations-kit checkpoint:
+  `dade9b6c16df3e0ec61484e0ff10dd558744d695`, tree
+  `e5baaf2f89dd81b0d8285f2b30f9718c471ac75b`. This is the pinned proposed code
+  release; the subsequent runbook checkpoint changes documentation only.
+
+## Verified local behavior
+
+- Current command parser supports task capture in English and Swedish. Owner
+  login, Secure/HttpOnly sessions, production registration lockout, account
+  isolation and the existing technical Live/Demo database boundary remain.
+- API failures carry HTTP status. Only confirmed 401 ends the session; 403,
+  network and 5xx errors have explicit error/retry states. Temporary fetch errors
+  preserve loaded data/drafts, and initial failures do not claim the user logged out.
+- Live/Demo tasks, messages and drafts are separate in-memory state. Requests
+  remain tied to their originating mode. Logout/expiry clear private state and
+  invalidate late success/error responses. Failed logout stays visibly unconfirmed.
+- Migration 2 adds a durable message sequence. New user/reply pairs are saved in
+  one transaction and returned directly. Legacy rows are preserved and ordered by
+  timestamp then existing row order; uncertain historical ties are not invented.
+- Task mapping validates the stored status against the existing `open` contract.
+  Unknown legacy status is retained and exposed as an error, not relabeled.
+- The three existing views and visual identity remain. Important text, input
+  size, touch targets, focus, error/pending states and short-height scrolling are
+  corrected. Reduced motion covers pseudoelements and hidden documents pause
+  decorative animations.
+- Final local gates: typecheck, **31 tests** across 3 files, production build and
+  `git diff --check` passed. The original source had 3 tests, which also passed.
+- Production verifier passed clean install/build with `NODE_ENV=production`,
+  removal of dev dependencies, real npm start, login/cookies, Live save, process
+  restart, ordered message retention, Demo isolation and logout. Temporary test
+  credentials and databases only; no production data accessed.
+- Chromium desktop emulation covered 390/430/820px, all three views empty/filled,
+  long history, errors, focus, 200% root font, 360px available height, reduced
+  motion, simulated visibility and Live/Demo/401/logout behavior. Screenshots
+  were reviewed outside source control. See the full report for scope/limits.
+- WebKit could not run because required system libraries were missing and this
+  execution environment denied their installation. No physical iPhone/iPad
+  Safari keyboard, safe-area or OS background behavior is claimed as tested.
+- Recovery rehearsal passed against actual old source at `a21a3a9...`: native
+  backup of an open WAL database, exact five-table preservation, migration/reopen,
+  old-server Live failure despite successful health, immutable backup checksum,
+  coordinated offline restore, restored old-code writes and account isolation.
+  Only synthetic temporary data; the exercise also proves loss of post-backup
+  changes when restoring to the earlier point.
+
+## Actually observed hosting status
+
+- The user has previously opened the app on Render. Old claims that hosting had
+  never been created were removed.
+- The user confirmed **My Workspace**. Read-only service metadata matched
+  `srv-db1vle3bc2fs73em1t30` (`jarvis-private`) to the exact GitHub repository.
+  Active branch is main; live commit is `a21a3a9b4877ce31afc8eec28ae5557854f01b01`.
+  Deploy `dep-db2k2kmi0phs738s20k0` finished successfully on 6 October 18:44:34 UTC.
+- Active build/start/health/region/plan/disk match PR #7. Auto-deploy is on commit.
+  The dashboard already has `npm ci --include=dev && npm run build`; main's
+  Blueprint omits it, and the PR codifies it. No active setting fix is proposed.
+- Events show two earlier exit-127 deploy failures after successful builds,
+  followed by success after a build-command change. Connector log queries
+  returned zero rows. The user supplied the earlier sequence `Empty build
+  command; skipping build` then `tsx: not found`; this is explicitly attributed
+  user evidence, not recovered connector output. Old log absence is not a gate.
+- Secure browserAuth sign-in and user device approval succeeded on 15 October.
+  Existing instance `6hxdk` reported the expected service ID/baseline SHA,
+  `DATABASE_PATH=/var/data/jarvis.db`, Node `v24.21.0`, mounted `/var/data`, and
+  `1003794432` bytes free. DB/WAL/SHM file sizes were 4096/61832/32768 bytes;
+  the conservative backup requirement was 67503648 bytes. No DB was opened.
+- The signed-in service links to Blueprint `exs-db1vjsu7bikc73bt8gdg`. The user
+  reported Auto Sync = Yes on 19 October; this is attributed dashboard evidence.
+  The extra /proc-permission probe result remains unverified. The browser
+  session ended; supported reauthentication timed out and a fresh service page
+  showed sign-in. Previously captured runtime evidence remains valid for its
+  observation time. Shell indicated SSH needs a registered public key; no
+  successful owner-device SFTP connection or backup destination is claimed.
+- No new successful HTTP health/in-app production test is claimed from the
+  Render `live` status. Only whitelisted runtime values and filesystem metadata
+  were read; no secrets or database rows were retrieved.
+- No production deploy, restart, merge, settings/secret/owner change, resource
+  creation or database-content read/download/write was performed.
+
+## Review handoff
+
+Open PR #7, `docs/RENDER_OPERATIONS_REVIEW.md` and `docs/RELEASE_RUNBOOK.md`.
+The latter gives executable pinned source installation, exact maintenance-only
+start and commit guards, native consistent backup, direct owner-iPad transfer,
+release smoke and resumable offline recovery paired with old code. A restart
+during restore starts maintenance again, never the application. The approved
+synthetic recovery exercise now exercises these actual operations functions.
+
+Keep the draft unmerged. Next single dashboard action: open jarvis-private →
+Shell and confirm that the terminal is visible. Change no settings. Then
+complete the documented read-only process-permission and owner-device/SFTP
+access checks. The proposed backup target is private iSH storage on the owner's
+passcode-protected iPad, not GitHub/chat/public storage. No backup has been made.
+Only after access prerequisites are resolved should the owner decide on the
+concrete production plan and 30-minute window. A verified backup on both targets
+must precede merge/migration. Physical Safari follows separately approved
+deployment. Restore loses post-backup changes and can revive older sessions;
+normal use stays frozen through acceptance. Etapp 2 is not started.
+
+
+## Release preparation checkpoint — 14 October 2026
+
+- Added runtime-only operations in `scripts/ops/`: a maintenance HTTP listener
+  that never imports the app or migrations, authenticated loopback control,
+  native SQLite backup/verification and resumable offline restoration. The
+  production entry points are fixed to the existing service and database path.
+  No operations tool has been installed or run on Render.
+- Reused and extended `scripts/verify-recovery.mjs` with the same synthetic
+  baseline exercise. It now calls the actual operations implementation, rejects
+  an open database, wrong service/owner, damaged backups and invalid IDs, and
+  checks maintenance-only responses and private control authentication.
+  Interrupted restore after quarantine (including committed WAL/SHM) and after
+  atomic installation both resume successfully without starting the app.
+- Focused recovery verification and JavaScript syntax/diff checks pass. The
+  previous 31-test/application/build/browser evidence remains valid; no full
+  application suite was repeated for these independent operations scripts.
+  The executor restricts inspection of other processes' `/proc` entries: the
+  local process-guard fixture uses the real test process's descriptors. The
+  production command still inspects all same-user processes and fails closed
+  if it lacks permission. Its actual Render permission check remains a gate
+  before backup/migration, not an assertion that runtime access was tested.
+- Read-only service metadata was rechecked and is unchanged. The supported
+  browser authentication flow offered Google; after the user's choice it
+  encountered `502 / Connection refused`. No authenticated Render dashboard
+  session was verified at that checkpoint. This access limitation was superseded
+  by the successful 15 October runtime observation recorded above.
+- The user supplied historical lines `Empty build command; skipping build`
+  followed by `tsx: not found`. This is user-provided evidence, not recovered
+  connector output. Missing old connector logs are not a release blocker.
+- Physical Safari verification belongs after a separately approved deployment,
+  since this PR has no mobile-accessible preview. No paid preview is proposed.
+- A pinned, executable release runbook follows in the documentation checkpoint.
+  It specifies the existing service, commit-guarded start commands, an owner-only
+  iPad backup target through SSH/SFTP, release checks and the exact rollback.
+  Backup/settings/merge/deploy remain unapproved and unperformed.
+
+## Release runbook checkpoint — 15 October 2026
+
+- Finished `docs/RELEASE_RUNBOOK.md` and reconciled setup, operations review and
+  requirement report with observed runtime facts and remaining access gates.
+  All five documentation files are saved together on the same branch/PR.
+- The proposed code release and operations-kit hashes remain pinned to `dade9b6...`.
+  This checkpoint changes no application or operations implementation. Shell
+  snippets and embedded Node programs are syntax-checked; kit hashes and API
+  expectations are checked against that pinned source, and `git diff --check`
+  passes. The existing full suite and recovery rehearsal were not rerun for
+  documentation-only edits.
+- The installer, backup, device transfer, setting changes, merge, migration,
+  smoke write and restore are proposals only. Read-only runtime inspection is
+  the only production action performed. Remaining authorization boundaries are
+  explicit; no data or credentials are attached to the public repository.
+
+## Auto Sync checkpoint — 19 October 2026
+
+- The user answered Yes to the explicit question about the linked Blueprint's
+  Auto Sync setting. Recorded as user-provided dashboard evidence, not an
+  independent live-tool observation or production authorization.
+- Updated all five release documents on the existing branch and PR #7. The
+  pinned code release and maintenance/backup/restore implementation are unchanged.
+- Next step is opening the existing service's Shell for the read-only process
+  permission check. Private iPad/SFTP access remains unverified.
+- Documentation diff check passes. No test suite rerun for this factual update;
+  no Render settings, backups, database operations, merge or deployment performed.
