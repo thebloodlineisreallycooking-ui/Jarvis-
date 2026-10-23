@@ -1,5 +1,15 @@
 # Progress
 
+## Produktionsbackup: automatiken pausad — 23 oktober 2026
+
+Blueprint Auto Sync No är bekräftat av ägaren. Auto-deploy Off är dessutom
+direkt verifierat med Render-connectorn på rätt tjänst. Gammal live-commit,
+`npm start` och underhåll av kvarstår; inga aktiva/köade deployer syns i de fem
+senaste resultaten. Backup och driftkitinstallation återstår. Nästa steg är
+en läsande kontroll via iSH före installation, utan databasöppning.
+Se [aktuell kontrollpunkt](PRODUCTION_BACKUP_STATUS.md). Inga kodändringar,
+migrationer, PR-deployer eller merge har utförts i denna uppföljning.
+
 ## Produktionsbackup godkänd, väntar på dashboardåtkomst — 22 oktober 2026
 
 Ägaren har godkänt driftkit, paus av automatiken, särskilt underhåll och verifierad

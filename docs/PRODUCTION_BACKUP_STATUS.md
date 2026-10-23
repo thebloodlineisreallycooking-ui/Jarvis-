@@ -1,4 +1,22 @@
-# Produktionsbackup — kontrollpunkt 22 oktober 2026
+# Produktionsbackup — kontrollpunkt 23 oktober 2026
+
+## Automatik pausad 23 oktober
+
+Ägaren bekräftade att Blueprint Auto Sync ändrats från Yes till No.
+Detta är användarbekräftat, inte en direkt dashboardavläsning av agenten.
+Ägaren stängde därefter av tjänstens auto-deploy; Render-connectorn verifierade
+`autoDeploy: no`, `autoDeployTrigger: off` och tjänstens uppdateringstid
+`2026-10-23T04:57:06.150902Z`. Samma repository, tjänst och main-branch kvarstår.
+Start är fortfarande `npm start` och Render Maintenance Mode är av.
+De fem senaste deployerna innehåller ingen pågående eller köad deployment;
+den gamla live-committen är oförändrad. Ingen backup eller driftkitinstallation
+har utförts av detta arbete. Nästa steg sker via befintlig SSH i iSH:
+läs aktuell runtime-commit, DATABASE_PATH och om den låsta kitkatalogen redan
+finns innan installation. Appen är fortfarande i normal drift enligt dessa
+driftinställningar; inget underhållsavbrott har inletts.
+
+Denna kontrollpunkt ersätter nedanstående uppgifter från 22 oktober om att
+automatiken fortfarande är på och att nästa steg är att läsa Auto Sync.
 
 ## Godkännande och stoppunkt
 
