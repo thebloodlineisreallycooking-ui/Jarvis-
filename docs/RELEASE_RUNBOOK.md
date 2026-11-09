@@ -1,5 +1,14 @@
 # Etapp 1 — körplan för backup, release och återställning
 
+## Aktuell kontrollpunkt 9 november 2026
+
+Render-backupen är skapad enligt ägarens framgångssvar: schema 1, 36864 byte.
+ID, SHA-256 och evidensgränser finns i [produktionsstatus](PRODUCTION_BACKUP_STATUS.md).
+Upprepa inte backup, installation eller underhållsdeployment. Fortsätt vid steg 5:
+privat iSH-kopia via SFTP, verifierad storlek/hash och avslutande Render-verifiering.
+Underhåll är fortsatt på, auto-deploy Off och PR #7 omergad/odriftsatt enligt
+färska connectoravläsningar. Stopp före release/migration kvarstår.
+
 ## Aktivt backupgodkännande 22 oktober 2026
 
 Ägaren har nu godkänt driftkit, pausad automatik, särskilt underhåll och backup

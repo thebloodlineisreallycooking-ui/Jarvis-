@@ -1,4 +1,36 @@
-# Produktionsbackup — kontrollpunkt 23 oktober 2026
+# Produktionsbackup — kontrollpunkt 9 november 2026
+
+## Render-backup skapad — separat iSH-kopia återstår
+
+Ägarens iSH-underlag mottaget 9 november visar att det godkända
+`client.mjs backup` avslutades med följande sanerade resultat:
+
+- ID: `backup-52746269-cf73-4e3c-85bc-fb4402f049d8`
+- SHA-256: `9dd80e4f8fac3fcec0e204b219d9fabd5d37b80f98a905be1de4951816a21e08`
+- Storlek: `36864` byte.
+- Schema: `1`.
+- Render-katalog: `/var/data/jarvis-backups/backup-52746269-cf73-4e3c-85bc-fb4402f049d8/`.
+
+Resultatet innebär enligt det installerade verktyget att processgrinden,
+schema-/ägar-/status-/utrymmeskontroller, integritet, foreign keys och källans
+överensstämmelse med kopian passerade. Kopian normaliserades till en fristående
+SQLite-fil, stängdes, synkroniserades och hashades. Detta är användartillhandahållet
+runtimeunderlag, inte agentens egen Shell-körning. Backup ska inte upprepas.
+Bildens klocka visar 16:05; exakt skapandetid från manifestet är ännu inte avläst.
+
+Färsk connectoravläsning 9 november bekräftar samma underhållsstartkommando,
+Maintenance Mode på, auto-deploy Off och gamla revisionen
+`a21a3a9b4877ce31afc8eec28ae5557854f01b01` live i
+`dep-dbdnalcs728c73cic4qg`. Inga konkurrerande deployer syns bland senaste fem.
+Blueprint Auto Sync No är tidigare ägarbekräftat. PR #7 är fortsatt öppen och
+omergad; PR-koden är inte driftsatt. Appen förblir stängd för publika anrop.
+
+Nästa steg är en ny privat katalog i iSH, sedan direkt SFTP av `snapshot.db`
+och `manifest.json` till `/root/JARVIS-backuper/backup-52746269-cf73-4e3c-85bc-fb4402f049d8/`.
+Katalogen och överföringen är ännu inte verifierade. iSH-kopian måste få exakt
+36864 byte och samma SHA-256; efterföljande `client.mjs verify` på Render
+återstår enligt körplanen. Inga filer eller privata manifestinnehåll ska skickas
+till chatten eller GitHub. Inga migrationer eller återställningar har körts.
 
 ## Privat runtimekontroll godkänd — backup återstår
 

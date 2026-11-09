@@ -1,5 +1,15 @@
 # Progress
 
+## Produktionsbackup skapad på Render — 9 november 2026
+
+Ägarens iSH-underlag visar lyckat backupresultat: 36864 byte, schema 1,
+med ID och SHA-256 sparade i [driftstatus](PRODUCTION_BACKUP_STATUS.md).
+Verktygets kontroller passerade enligt dess framgångssvar. Backupen ska inte
+köras igen. Privat iSH-kopia, matchande storlek/hash, avslutande Render-verifiering
+och exakt skapandetid från manifestet återstår. Connectorn bekräftar fortsatt
+underhåll, auto-deploy Off och gamla live-revisionen. PR #7 är omergad och
+odriftsatt. Endast sanerad dokumentation ändras; inga fulla tester upprepas.
+
 ## Produktionsbackup: privat runtimekontroll godkänd — 23 oktober 2026
 
 Ägarens iSH-underlag kl. 17:37 bekräftar rätt tjänst, gammal revision och
