@@ -8,6 +8,8 @@ import { Dialog } from './components/Dialog';
 import { Composer } from './components/Composer';
 import { Recovery } from './components/Recovery';
 import { Tasks } from './components/Tasks';
+import { Capabilities } from './components/Capabilities';
+import { VoicePresentation } from './components/VoicePresentation';
 import { History } from './components/History';
 import { api, ApiError } from './api';
 import { Workspace, workspaceStatus, activeThread } from './workspace';
@@ -35,7 +37,7 @@ function useLoginState() {
       await api('/auth/login', { method: 'POST', body: JSON.stringify(form), signal: controller.signal });
       if (!controller.signal.aborted) onSuccess();
     } catch (reason) {
-      if (!controller.signal.aborted) setError(reason instanceof ApiError && reason.status === 401 ? 'Username or password is incorrect.' : (reason as Error).message);
+      if (!controller.signal.aborted) setError(reason instanceof ApiError && reason.status === 401 ? 'Användarnamn eller lösenord stämmer inte.' : (reason as Error).message);
     } finally {
       pending.current = null;
       if (!controller.signal.aborted) setBusy(false);
@@ -47,31 +49,25 @@ function useLoginState() {
 
 function Login({ onSuccess, notice }: { onSuccess: () => void; notice: string }) {
   const login = useLoginState();
-    return (
-      <main className="login">
-        <div className="login-ambient" aria-hidden="true"><Core mode="live" /></div>
-        <section className="login-card">
-          <div className="login-mark"><span>J</span></div>
-          <span className="eyebrow">PRIVATE SYSTEM / OWNER ACCESS</span>
-          <h1>Welcome back.</h1>
-          <p>Authenticate to enter your private command center.</p>
-          {notice && <p role="status">{notice}</p>}
-          <form onSubmit={(event) => { event.preventDefault(); void login.signIn(onSuccess); }}>
-            <label>Username<input autoComplete="username" value={login.form.username} onChange={(event) => login.setForm({ ...login.form, username: event.target.value })} /></label>
-            <label>Password<input type="password" autoComplete="current-password" value={login.form.password} onChange={(event) => login.setForm({ ...login.form, password: event.target.value })} /></label>
-            {login.error && <p className="error" role="alert">{login.error}</p>}
-            <button disabled={login.busy || !login.form.username || !login.form.password}>{login.busy ? 'Authenticating…' : 'Enter JARVIS'}<span>→</span></button>
-          </form>
-          <small><i /> Private owner access · Account creation disabled</small>
-        </section>
-      </main>
-    );
-  }
+  return <main className="login"><section className="login-card">
+    <Core mode="live" state={login.busy ? 'loading' : login.error ? 'error' : 'idle'} />
+    <span className="eyebrow">JARVIS · Din privata arbetsyta</span><h1>Välkommen tillbaka.</h1><p>Plats för dina tankar och nästa steg.</p>
+    {notice && <p className="inline-notice" role="status">{notice === 'Your session has ended. Sign in again.' ? 'Din session har avslutats. Logga in igen.' : notice}</p>}
+    <form onSubmit={event => { event.preventDefault(); void login.signIn(onSuccess); }}>
+      <label>Användarnamn<input name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} value={login.form.username} onChange={event => login.setForm({ ...login.form, username: event.target.value })} required /></label>
+      <label>Lösenord<input name="password" type="password" autoComplete="current-password" value={login.form.password} onChange={event => login.setForm({ ...login.form, password: event.target.value })} required /></label>
+      {login.error && <p className="error" role="alert">{login.error}</p>}
+      <button disabled={login.busy || !login.form.username || !login.form.password}>{login.busy ? 'Öppnar din arbetsyta…' : 'Öppna JARVIS'}<Icon name="chevron" /></button>
+    </form><small><Icon name="lock" />Privat konto · Registrering är stängd</small>
+  </section></main>;
+}
 
 
 function App() {
   const [workspace] = useState(() => new Workspace());
   const state = useSyncExternalStore(workspace.subscribe, workspace.getSnapshot);
+  const authenticatedInPage = useRef(false);
+  if (state.session === 'authenticated') authenticatedInPage.current = true;
   const { mode } = state, content = state[mode], thread = activeThread(state);
   const busy = state.busy !== null, status = workspaceStatus(state);
   const [view, setView] = useState<'command' | 'voice' | 'agents'>('command');
@@ -84,8 +80,8 @@ function App() {
     return () => { document.removeEventListener('visibilitychange', visibility); delete document.documentElement.dataset.documentHidden; };
   }, []);
   useEffect(() => { if (state.session === 'signed-out') { setView('command'); setShowTasks(false); } }, [state.session]);
-  if (state.session === 'checking' || state.session === 'unavailable') return <main className="boot"><Core mode="live" state={busy ? 'loading' : 'error'} /><section className="boot-status" aria-live="polite"><span className="eyebrow">JARVIS · Privat arbetsyta</span><h1>{busy ? 'Öppnar din arbetsyta' : 'Kunde inte öppna JARVIS'}</h1>{state.error && <p className="error" role="alert">{state.error.message}</p>}{busy ? <p>Laddar din session och dina samtal…</p> : <button onClick={() => void workspace.load()}><Icon name="refresh" />Try again</button>}</section></main>;
-  if (state.session === 'signed-out') return <Login onSuccess={() => void workspace.loginSucceeded()} notice={state.notice} />;
+  if (state.session === 'checking' || state.session === 'unavailable') return <main className="boot"><Core mode="live" state={busy ? 'loading' : 'error'} /><section className="boot-status" aria-live="polite"><span className="eyebrow">JARVIS · Privat arbetsyta</span><h1>{busy ? 'Öppnar din arbetsyta' : 'Kunde inte öppna JARVIS'}</h1>{state.error && <p className="error" role="alert">{state.error.message}</p>}{busy ? <p>Laddar din session och dina samtal…</p> : <button onClick={() => void workspace.load()}><Icon name="refresh" />Försök igen</button>}</section></main>;
+  if (state.session === 'signed-out') return <Login onSuccess={() => void workspace.loginSucceeded()} notice={authenticatedInPage.current ? state.notice : ''} />;
   const viewTitle = navigation.find(item => item.id === view)!.label;
   const idle = mode === 'demo' ? 'Demo · Bara i minnet' : state.capabilities.chat.state === 'available' ? 'AI tillgänglig' : 'AI ej ansluten';
   const activity = state.busy === 'load' ? 'Laddar' : state.busy === 'logout' ? 'Loggar ut' : state.busy ? status === 'TEXT GENERERAS' ? 'Text genereras' : 'Sparar' : state.error ? 'Behöver din uppmärksamhet' : idle;
@@ -97,11 +93,11 @@ function App() {
     <a className="skip-link" href="#main-content">Hoppa till innehållet</a>
     <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>Din privata arbetsyta</small></div></div><nav aria-label="Primary">{navigation.map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}><Icon name={item.icon as IconName} /><span className="nav-label">{item.label}</span></button>)}</nav><div className="sidebar-footer"><span className="status-label"><Icon name="lock" />Privat session</span><p>{mode === 'demo' ? 'Demo · Tillfälligt innehåll' : 'Live · Sparas på ditt konto'}</p></div></aside>
     <main id="main-content" tabIndex={-1} className={`canvas view-${view}`}>
-      <header className="app-header"><div><span className="eyebrow">JARVIS <span className={`mode-tag ${mode}`}>/ {mode === 'demo' ? 'Demo' : 'Privat'}</span></span><h1>{viewTitle}</h1></div><div className="session-controls"><button className="ghost icon-button" aria-label="Visa uppgifter" aria-haspopup="dialog" onClick={() => setShowTasks(true)}><Icon name="tasks" /></button><button className="ghost icon-button" aria-label="Sign out" title="Logga ut" disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}><Icon name="logout" /></button></div></header>
+      <header className="app-header"><div><span className="eyebrow">JARVIS <span className={`mode-tag ${mode}`}>/ {mode === 'demo' ? 'Demo' : 'Privat'}</span></span><h1>{viewTitle}</h1></div><div className="session-controls"><button className="ghost icon-button" aria-label="Visa uppgifter" aria-haspopup="dialog" onClick={() => setShowTasks(true)}><Icon name="tasks" /></button><button className="ghost icon-button" aria-label="Logga ut" title="Logga ut" disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}><Icon name="logout" /></button></div></header>
       <div className="workspace-heading"><Conversations workspace={workspace} state={state} /><div className="request-state" role="status" data-status={status} aria-live="polite"><span className={`mode-tag ${mode}`}>{(state.pendingMode ?? mode) === 'demo' ? 'Demo' : 'Live'}</span><span className="status-dot" />{activity}</div></div>
       {view === 'command' && <div className={`chat-workspace ${!thread.messages.length ? 'is-empty' : 'has-messages'}`}>{!!thread.messages.length && <div className="compact-signature"><Core compact mode={mode} status={status} /><span>Tankar, uppgifter och nästa steg.</span></div>}<History workspace={workspace} state={state} empty={welcome} /><Recovery workspace={workspace} state={state} /><Composer workspace={workspace} state={state} /></div>}
-      {view === 'voice' && <section className="focus-layout"><div className="voice-visual"><Core mode={mode} status={status} /><div className="voice-status"><span className="eyebrow">Lugn och fokus</span><h2>Röst ej ansluten</h2><p>Fortsätt med text. Mikrofon och uppspelning är avstängda.</p><span className="voice-unavailable"><Icon name="microphone" />Ingen inspelning pågår</span></div></div><div className="focus-conversation"><History workspace={workspace} state={state} /><Recovery workspace={workspace} state={state} /><Composer workspace={workspace} state={state} /></div></section>}
-      {view === 'agents' && <section className="agents-layout"><div className="agent-intro"><span className="eyebrow">Dina verktyg</span><h2>En grund att bygga vidare på.</h2><p>Uppgifter och samtal fungerar nu. Inga agenter eller kunskapskällor är anslutna.</p></div><Recovery workspace={workspace} state={state} /><Tasks workspace={workspace} state={state} /><button className="ghost" onClick={() => navigate('command')}><Icon name="arrowLeft" />Tillbaka till samtalet</button></section>}
+      {view === 'voice' && <section className="focus-layout"><VoicePresentation mode={mode} /><div className="focus-conversation"><span className="eyebrow">Fortsätt med text</span><History workspace={workspace} state={state} empty={<></>} /><Recovery workspace={workspace} state={state} /><Composer workspace={workspace} state={state} /></div></section>}
+      {view === 'agents' && <section className="agents-layout"><div className="agent-intro"><span className="eyebrow">Dina verktyg</span><h2>En grund att bygga vidare på.</h2><p>Se vad du kan använda nu och vad som väntar längre fram.</p></div><Capabilities state={state} /><Tasks workspace={workspace} state={state} /><button className="ghost" onClick={() => navigate('command')}><Icon name="arrowLeft" />Tillbaka till samtalet</button></section>}
       {showTasks && <Dialog className="task-sheet" title="Dina uppgifter" onClose={() => setShowTasks(false)}><Tasks workspace={workspace} state={state} /></Dialog>}
     </main>
     <aside className="context"><span className="eyebrow">Din överblick</span><section><div className="context-title"><Icon name="tasks" /><h2>Uppgifter</h2></div><p className="context-count"><strong>{openTasks}</strong> öppna{state.search ? ' i sökningen' : ''}</p>{content.tasks.filter(task => task.status === 'open').slice(0, 3).map(task => <p className="context-task" key={task.id}><span />{task.title}</p>)}{!openTasks && <p>Lite mer utrymme för det som kommer härnäst.</p>}<button className="ghost" onClick={() => setShowTasks(true)}>Hantera uppgifter<Icon name="chevron" /></button></section><section><div className="context-title"><Icon name="shield" /><h2>Privat arbetsyta</h2></div><p>{mode === 'demo' ? 'Demo sparas bara i minnet och försvinner vid omladdning.' : 'Samtal och uppgifter sparas på ditt konto. Utkast finns bara i den här sessionen.'}</p></section><section><span className="status-label"><span className="status-dot" />{idle}</span><p className="context-footnote">Röst ej ansluten</p><button className="ghost" onClick={() => navigate('agents')}>Visa förmågor<Icon name="chevron" /></button></section></aside>

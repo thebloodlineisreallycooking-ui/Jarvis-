@@ -1,5 +1,19 @@
 # Progress
 
+## UI pass C — 10 november 2026
+
+Voice Focus har egen komposition och tydligt avstängd ljudfunktion. Åtta
+utvecklingstillstånd ligger i en separat fixture-entry; framtida rösttexter
+ingår inte i produktionsbundlen. Fixtures provade i Chromium med noll API-/
+ljudanrop, reduced motion och simulerad hidden-paus. Kapaciteter visar serverns
+faktiska läge och skiljer lokala verktyg från planerade agenter/kunskapskällor.
+Uppgifter är kompakta rader med checkbox, meny, lokal sparstatus och beständig
+felåterhämtning även i sheet. Nested dialoger behåller fokus och stängs var för
+sig. Login är sammanhållen, svensk och kompatibel med lösenordshanterare.
+67 tester, build/typecheck och första hela produktionsbrowserflödet passerar.
+Granskning ledde till lägre röstkomposition på mobil och neutral login vid ett
+första besök. Slutmatris och mått färdigställs i D. Inga backend-/driftändringar.
+
 ## UI pass B — 10 november 2026
 
 Command Center har en kompakt tomvy och 36px kärna i aktiva samtal. Historik
