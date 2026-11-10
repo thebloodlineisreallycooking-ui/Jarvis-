@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client';
 import type { Mode } from '../../shared/contracts';
 import './styles.css';
+import { Conversations } from './components/Conversations';
+import { Tasks } from './components/Tasks';
+import { History } from './components/History';
 import { api, ApiError } from './api';
-import { Workspace, workspaceStatus } from './workspace';
+import { Workspace, workspaceStatus, activeThread } from './workspace';
 
 const navigation = [
   { id: 'command', icon: '⌂', label: 'Command Center', available: true },
@@ -88,125 +91,45 @@ function Login({ onSuccess, notice }: { onSuccess: () => void; notice: string })
 function App() {
   const [workspace] = useState(() => new Workspace());
   const state = useSyncExternalStore(workspace.subscribe, workspace.getSnapshot);
-  const { mode } = state;
-  const busy = state.busy !== null;
-  const text = state.drafts[mode];
-  const { tasks, messages } = state[mode];
-  const liveTasks = state.live.tasks;
-  const status = workspaceStatus(state);
+  const { mode } = state, content = state[mode], thread = activeThread(state);
+  const busy = state.busy !== null, status = workspaceStatus(state);
   const [view, setView] = useState<'command' | 'voice' | 'agents'>('command');
-  const conversationRef = useRef<HTMLElement>(null);
-
+  const [showTasks, setShowTasks] = useState(false);
+  const active = content.conversations.find(c => c.id === content.activeId);
   useEffect(() => { void workspace.load(); return workspace.cancelPending; }, [workspace]);
   useEffect(() => {
     const visibility = () => { document.documentElement.dataset.documentHidden = String(document.hidden); };
-    visibility();
-    document.addEventListener('visibilitychange', visibility);
+    visibility(); document.addEventListener('visibilitychange', visibility);
     return () => { document.removeEventListener('visibilitychange', visibility); delete document.documentElement.dataset.documentHidden; };
   }, []);
-  useEffect(() => { if (state.session === 'signed-out') setView('command'); }, [state.session]);
-  useEffect(() => {
-    const region = conversationRef.current;
-    if (region) region.scrollTop = region.scrollHeight;
-  }, [messages.length, mode, view]);
-
-  if (state.session === 'checking' || state.session === 'unavailable') return (
-    <main className="boot">
-      <Core mode="live" status={busy ? 'LOADING' : 'ERROR'} />
-      <section className="boot-status" aria-live="polite">
-        <h1>{busy ? 'Checking your session…' : 'Unable to load JARVIS'}</h1>
-        {state.error && <p className="error" role="alert">{state.error.message}</p>}
-        {!busy && <button onClick={() => void workspace.load()}>Try again</button>}
-      </section>
-    </main>
-  );
+  useEffect(() => { if (state.session === 'signed-out') { setView('command'); setShowTasks(false); } }, [state.session]);
+  if (state.session === 'checking' || state.session === 'unavailable') return <main className="boot"><Core mode="live" status={busy ? 'LOADING' : 'ERROR'} /><section className="boot-status" aria-live="polite"><h1>{busy ? 'Checking your session…' : 'Unable to load JARVIS'}</h1>{state.error && <p className="error" role="alert">{state.error.message}</p>}{!busy && <button onClick={() => void workspace.load()}>Try again</button>}</section></main>;
   if (state.session === 'signed-out') return <Login onSuccess={() => void workspace.loginSucceeded()} notice={state.notice} />;
   const viewTitle = view === 'command' ? 'Command Center' : view === 'voice' ? 'Voice Focus' : 'Agents & Knowledge';
-  const viewSubtitle = view === 'command' ? 'What would you like to accomplish?' : view === 'voice' ? 'A focused conversation workspace.' : 'Your future intelligence workspace.';
-  const conversation = (
-    <section className="conversation" ref={conversationRef} tabIndex={0} aria-label={`${mode === 'live' ? 'Live' : 'Demo'} conversation`} aria-live="polite">
-      {messages.length === 0 ? <div className="empty"><span className="empty-symbol">⌁</span><div><h2>Awaiting your first command</h2><p>Try “Add a task to review JARVIS”. Swedish is supported too.</p></div></div> : messages.map((message) => <article key={message.id} className={message.role}><span>{message.role === 'assistant' ? 'JARVIS' : 'YOU'} · {message.mode.toUpperCase()}</span><p>{message.text}</p></article>)}
-    </section>
-  );
-  const composer = (
-    <>
-      <form className="composer" onSubmit={(event) => { event.preventDefault(); void workspace.submit(); }}>
-        <span className="prompt">›</span>
-        <label className="sr-only" htmlFor="command">Command</label>
-        <input id="command" value={text} onChange={(event) => workspace.setDraft(event.target.value)} placeholder="Add a task to…" maxLength={300} disabled={busy} />
-        <div className="mode-switch" role="group" aria-label="Execution mode">
-          <button type="button" className={mode === 'live' ? 'selected' : ''} aria-pressed={mode === 'live'} onClick={() => workspace.setMode('live')}>Live</button>
-          <button type="button" className={mode === 'demo' ? 'selected demo' : ''} aria-pressed={mode === 'demo'} onClick={() => workspace.setMode('demo')}>Demo</button>
-        </div>
-        <button className="send" aria-label="Send command" disabled={busy || !text.trim()}>{busy ? '···' : '↑'}</button>
-      </form>
-      <div className={`mode-notice ${mode}`}><i />{mode === 'live' ? 'LIVE · Tasks and messages are saved to your private account' : 'DEMO · Temporary preview — nothing will be saved'}</div>
-    </>
-  );
-
-  return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>PERSONAL INTELLIGENCE</small></div></div>
-        <nav aria-label="Primary">
-          {navigation.map((item) => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} disabled={!item.available} aria-current={view === item.id ? 'page' : undefined} onClick={() => item.available && setView(item.id as typeof view)} title={!item.available ? `${item.label} — later phase` : item.label}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span>{!item.available && <em>Later</em>}</button>)}
-        </nav>
-        <div className="sidebar-footer"><span><i /> OWNER SESSION</span></div>
-      </aside>
-
-      <main className={`canvas view-${view}`}>
-        <header>
-          <div><span className="eyebrow">JARVIS / {viewTitle.toUpperCase()}</span><h1>{viewTitle}</h1><p>{viewSubtitle}</p></div>
-          <div className="session-controls"><div className="system-pill"><i /><span>Authenticated<small>Private owner session</small></span></div><button disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}>{state.busy === 'logout' ? 'Signing out…' : 'Sign out'}</button></div>
-        </header>
-        <div className="request-state" role="status" aria-live="polite">{(state.pendingMode ?? mode).toUpperCase()} · {status}</div>
-        {state.error && <section className="error-panel" role="alert">
-          <p>{state.error.message}</p>
-          {state.error.operation === 'logout'
-            ? <button disabled={busy} onClick={() => void workspace.logout()}>Try signing out again</button>
-            : state.error.kind === 'request'
-              ? <button onClick={() => { setView('command'); requestAnimationFrame(() => document.getElementById('command')?.focus()); }}>Edit command</button>
-              : <button disabled={busy} onClick={() => void workspace.load()}>Retry loading Live data</button>}
-        </section>}
-
-        {view === 'command' && <>
-          <section className="core-stage">
-            <div className="telemetry telemetry-left"><span>SESSION</span><strong>PRIVATE</strong><small>Owner authenticated</small></div>
-            <Core mode={mode} status={status} />
-            <div className="telemetry telemetry-right"><span>MODE</span><strong>{mode.toUpperCase()}</strong><small>{mode === 'live' ? 'Writes enabled' : 'No persistence'}</small></div>
-            <div className="core-state"><span /><b>JARVIS</b> · {status}</div>
-          </section>
-          {conversation}
-          {composer}
-        </>}
-
-        {view === 'voice' && <section className="focus-layout">
-          <div className="voice-visual">
-            <Core mode={mode} status={status} />
-            <div className="voice-status"><span className="eyebrow">VOICE INPUT</span><strong>Not configured</strong><p>No microphone or speech provider is connected. Continue the same conversation with text below.</p></div>
-          </div>
-          <div className="focus-conversation">{conversation}{composer}</div>
-        </section>}
-
-        {view === 'agents' && <section className="agents-layout">
-          <div className="agent-intro"><span className="eyebrow">PRIVATE WORKSPACE</span><h2>Agents &amp; Knowledge</h2><p>This view is ready for future connections, but no AI provider, agent, or knowledge source is configured.</p></div>
-          <div className="empty-grid">
-            <article><span className="empty-icon">◇</span><div><h3>No agents connected</h3><p>Provider-backed agents will appear here after a later, explicit integration step.</p></div><button disabled>Connect provider · Later</button></article>
-            <article><span className="empty-icon">▤</span><div><h3>No knowledge sources</h3><p>No files, drives, memory stores, or external data sources are connected.</p></div><button disabled>Add source · Later</button></article>
-          </div>
-          <section className="task-panel"><div className="panel-title"><div><span className="eyebrow">LOCAL WORKSPACE</span><h2>{mode === 'live' ? 'Persisted tasks · Live' : 'Temporary tasks · Demo'}</h2></div><strong>{tasks.length}</strong></div>{tasks.length === 0 ? <div className="task-empty">No {mode === 'live' ? 'Live' : 'Demo'} tasks yet. Create one from Command Center or Voice Focus.</div> : <ul>{tasks.map((task, index) => <li key={`${mode}-${task.id}-${index}`}><span>○</span><div><b>{task.title}</b><small>Created {new Date(task.createdAt).toLocaleDateString()}</small></div><em>{task.status.toUpperCase()}</em></li>)}</ul>}</section>
-        </section>}
-      </main>
-
-      <aside className="context">
-        <div className="context-heading"><span className="eyebrow">CURRENT CONTEXT</span><i /></div>
-        <section className="metric-card"><div><span>PERSISTED LIVE TASKS</span><strong>{String(liveTasks.length).padStart(2, '0')}</strong></div><div className="mini-ring"><span>{liveTasks.length}</span></div><small>Loaded from your account</small></section>
-        <section><h2>Available now</h2><ul><li><i className="ready" /><span>Task capture<b>{busy ? status : state.error ? 'Check app status' : 'Available'}</b></span></li><li><i className="ready" /><span>Text conversation<b>{busy ? status : state.error ? 'Check app status' : 'Available'}</b></span></li><li><i /><span>Voice input<b>Not configured</b></span></li><li><i /><span>Agents &amp; knowledge<b>Not connected</b></span></li></ul></section>
-        <section className="activity"><h2>Actual app state</h2><div><span>VIEW</span><b>{viewTitle}</b></div><div><span>MODE</span><b>{mode}</b></div><div><span>MESSAGES</span><b>{messages.length}</b></div></section>
-        <p className="notice"><i>i</i><span><b>Persistence boundary</b>Demo items disappear on refresh. Live items use SQLite; durability depends on the configured host storage.</span></p>
-      </aside>
-    </div>
-  );
+  const composer = <>
+    <form className="composer" onSubmit={event => { event.preventDefault(); void workspace.submit(); }}>
+      <span className="prompt">›</span><label className="sr-only" htmlFor="command">Command</label>
+      <textarea id="command" rows={2} value={thread.draft} onChange={event => workspace.setDraft(event.target.value)} placeholder="Skriv ett meddelande eller en uppgift…" disabled={!active || active.status === 'archived'} />
+      <div className="mode-switch" role="group" aria-label="Execution mode">{(['live', 'demo'] as const).map(value => <button key={value} type="button" className={mode === value ? `selected ${value}` : ''} aria-pressed={mode === value} onClick={() => workspace.setMode(value)}>{value === 'live' ? 'Live' : 'Demo'}</button>)}</div>
+      <button className="send" aria-label="Send command" disabled={busy || !thread.draft.trim() || thread.draft.trim().length > 2000 || !active || active.status === 'archived'}>{busy ? '···' : '↑'}</button>
+    </form>
+    <div className={`mode-notice ${mode}`}><i />{mode === 'live' ? 'LIVE · Uppgifter och samtal sparas på ditt privata konto' : 'DEMO · Bara i minnet; försvinner vid omladdning'} · {thread.draft.trim().length}/2000</div>
+  </>;
+  const unresolved = Object.values(state.operations).filter(op => op.status === 'unknown' || op.status === 'pending');
+  return <div className="shell">
+    <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>PERSONAL INTELLIGENCE</small></div></div><nav aria-label="Primary">{navigation.filter(item => item.available).map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => setView(item.id as typeof view)}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span></button>)}</nav><div className="sidebar-footer"><span>OWNER SESSION</span></div></aside>
+    <main className={`canvas view-${view}`}>
+      <header><div><span className="eyebrow">JARVIS / {viewTitle.toUpperCase()}</span><h1>{viewTitle}</h1><p>Dina uppgifter, dina samtal.</p></div><div className="session-controls"><button aria-expanded={showTasks} onClick={() => setShowTasks(!showTasks)}>{showTasks ? 'Dölj uppgifter' : 'Visa uppgifter'}</button><button disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}>{state.busy === 'logout' ? 'Signing out…' : 'Sign out'}</button></div></header>
+      <div className="request-state" role="status" aria-live="polite">{(state.pendingMode ?? mode).toUpperCase()} · {status}</div>
+      {state.error && <section className="error-panel" role="alert"><p>{state.error.message}</p>{state.error.current && <p>Aktuell titel: {state.error.current.title}. Läs in aktuell version innan du ändrar igen.</p>}{state.error.operation === 'logout' ? <button disabled={busy} onClick={() => void workspace.logout()}>Try signing out again</button> : <button disabled={busy} onClick={() => void workspace.load()}>Läs in aktuella data</button>}</section>}
+      {unresolved.map(op => <section className="operation-panel" key={op.id} aria-label="Operationsstatus"><p><b>{op.label}</b> · {state[op.mode].conversations.find(c => c.id === op.conversationId)?.title ?? 'Ursprungligt samtal'} · {op.status === 'pending' ? 'Pågår' : 'Resultat okänt — kan vara sparat'}</p>{op.status === 'unknown' && <><button disabled={busy} onClick={() => void workspace.retry(op.id)}>Försök samma operation igen</button>{!op.path.startsWith('/conversations') && <button disabled={busy} onClick={() => void workspace.checkOperation(op.id)}>Kontrollera sparat resultat</button>}</>}</section>)}
+      <Conversations workspace={workspace} state={state} />
+      {showTasks && <Tasks workspace={workspace} state={state} />}
+      {view === 'command' && <><section className="core-stage"><Core mode={mode} status={status} /><div className="core-state"><b>JARVIS</b> · {status}</div></section><History workspace={workspace} state={state} />{composer}</>}
+      {view === 'voice' && <section className="focus-layout"><div className="voice-visual"><Core mode={mode} status={status} /><div className="voice-status"><span className="eyebrow">VOICE INPUT</span><strong>Röst ej ansluten</strong><p>Mikrofon, transkription och talsyntes är avstängda. Fortsätt samtalet med text.</p></div></div><div className="focus-conversation"><History workspace={workspace} state={state} />{composer}</div></section>}
+      {view === 'agents' && <section className="agents-layout"><div className="agent-intro"><span className="eyebrow">PRIVATE WORKSPACE</span><h2>Agents &amp; Knowledge</h2><p>Inga agenter eller kunskapskällor är anslutna. AI: {state.capabilities.chat.state === 'available' ? 'Tillgänglig via servern' : 'Ej ansluten'}.</p></div>{!showTasks && <Tasks workspace={workspace} state={state} />}<p>Fortsätt skriva i Command Center eller Voice Focus. Ditt utkast finns kvar.</p></section>}
+    </main>
+    <aside className="context"><span className="eyebrow">AKTUELLT LÄGE</span><section><h2>Uppgifter och samtal</h2><p>Live sparas på ditt konto. Demo och utkast finns bara i minnet.</p><p>{state.live.counts.open} öppna · {state.live.counts.completed} slutförda uppgifter i aktuellt sökresultat</p></section><section><h2>Förmågor</h2><p>AI: {state.capabilities.chat.state === 'available' ? 'Tillgänglig' : 'Ej ansluten'}</p><p>Röst ej ansluten</p></section></aside>
+  </div>;
 }
-
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);

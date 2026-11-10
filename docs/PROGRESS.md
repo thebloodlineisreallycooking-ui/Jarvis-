@@ -1,5 +1,25 @@
 # Progress
 
+## PRE-INTEGRATION P1–P6 — verifierad kodcheckpoint 10 november 2026
+
+Draft-PR [#8](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/8)
+är skapad mot PR #7:s branch. Första GitHub-checkpoint:
+`77a4e381287a644ad0321f14f33b9fe808d8ba36`.
+
+Ny migration 3 bevarar legacyfält och sekvenser, lägger till uppgiftsversioner,
+slutförande, samtal och konto-/payloadbundna operationer. Uppgiftslivscykel,
+CAS-konflikter, fysiska raderingar med bevarad historik, beständig replay efter
+omstart/radering, atomiska skrivningar och cursorisolering är testade.
+Klienten har separata trådar/utkast, Demo helt i minnet, manuella återförsök,
+nya tillgängliga task-/samtalskontroller och bibehållet sessionsskydd.
+Origin, no-store, login-/mutationsgränser och sanerade fel ingår.
+
+Lokalt: typecheck, **39 tester**, build och diff-check passerar. Nya UI-flöden
+har ännu inte browserverifierats. Provider-/ljudgränser och slutlig
+produktionsstart-/återställningsövning återstår. Nästa konkreta uppgift är
+testprovider, SSE och ljudtillstånd. Ingen Render-åtgärd, mikrofon eller riktig
+provider har använts; produktion och backupkit är oförändrade.
+
 ## PRE-INTEGRATION P0 — 10 november 2026
 
 Ny utvecklingsbranch från verifierad PR #7-head `6abfbb0572f526fa9ad7c52f429c74ea2c1226ff`.

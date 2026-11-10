@@ -135,3 +135,45 @@ html[data-document-hidden="true"] *::after { animation-play-state: paused !impor
   /* Let the page scroll naturally above the keyboard instead of trapping focus. */
   .shell:has(.composer input:focus) .sidebar { display: none; }
 }
+
+/* Foundation: reachable task/thread controls within the existing three views. */
+button, select, textarea { font: inherit; }
+.canvas button, dialog button { min-width: 44px; min-height: 44px; padding: .55rem .8rem; border: 1px solid #438299; border-radius: 5px; background: #0b2432; color: #ddf8ff; }
+.canvas button:disabled { opacity: .5; }
+label { display: grid; gap: .35rem; color: #b9d3dd; }
+input, select, textarea { min-width: 0; max-width: 100%; min-height: 44px; font-size: 1rem; border: 1px solid #316278; border-radius: 5px; padding: .65rem; background: #07131d; color: #e3f8ff; }
+textarea { width: 100%; resize: vertical; }
+.thread-controls { display: grid; gap: .65rem; padding: .75rem 0; min-width: 0; }
+.thread-controls select { width: 100%; }
+.thread-actions, .task-filters, .task-actions, .dialog-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.task-panel { margin-block: .75rem; }
+.task-search { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin: 1rem 0; }
+.task-search label { flex: 1 1 160px; }
+.task-filters button[aria-pressed="true"] { border-color: var(--cyan); background: #164156; }
+.task-panel li { display: flex; flex-direction: column; align-items: stretch; gap: .75rem; }
+.task-panel li small { margin-top: .5rem; }
+.operation-panel { padding: .75rem; margin-bottom: .75rem; background: #1e231a; border: 1px solid #a79850; border-radius: 6px; }
+.operation-panel button { margin: .25rem; }
+.history-wrap { min-width: 0; position: relative; }
+.jump-latest { margin-block: .5rem; }
+.composer textarea { border: 0; background: transparent; padding: .5rem 0; }
+.core-stage { min-height: 210px; flex: 0 0 auto; }
+.core-stage .core { width: 180px; }
+.context p { font-size: .9375rem; color: var(--muted); }
+.context section { overflow-wrap: anywhere; }
+dialog { max-width: min(92vw, 32rem); width: 100%; max-height: 85dvh; overflow-y: auto; background: #081923; color: #e5f9fd; border: 1px solid #47899f; border-radius: 10px; padding: 1.4rem; box-shadow: 0 30px 100px #000c; }
+dialog::backdrop { background: #000b; }
+dialog h2 { margin-top: 0; font-size: 1.35rem; }
+dialog strong { overflow-wrap: anywhere; }
+dialog .danger { border-color: #ff8497; color: #ffc0cb; }
+@media (max-width:650px) {
+  .composer { grid-template-columns: 1fr 44px; }
+  .composer .prompt { display: none; }
+  .composer textarea { grid-column: 1; }
+  .composer .mode-switch { grid-column: 1; }
+  .composer .send { grid-column: 2; padding: 0; }
+  .shell:has(.composer textarea:focus) .sidebar { display: none; }
+  .canvas .panel-title { flex-wrap: wrap; }
+  .thread-actions button { flex: 1 1 auto; }
+}
+@media (max-height:550px) { .core-stage { min-height: 100px; } .core-stage .core { width: 65px; } }
