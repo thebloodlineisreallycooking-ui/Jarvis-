@@ -1,5 +1,14 @@
 # Progress
 
+## PRE-INTEGRATION P0 — 10 november 2026
+
+Ny utvecklingsbranch från verifierad PR #7-head `6abfbb0572f526fa9ad7c52f429c74ea2c1226ff`.
+PR #7 är öppen/draft/omergad och förblir fryst. GitHub-läsning och separat
+branchskrivning bekräftade. Baslinjens typecheck, 31 tester, build och diff-check
+passerar. Se [plan och kravmatris](PRE_INTEGRATION_PLAN.md) för omfattning,
+fortsättningspunkt och separata utvecklings-/backup-/releasestatusar.
+Ingen Render-avläsning eller produktionsåtgärd i detta uppdrag.
+
 ## Produktionsbackup skapad på Render — 9 november 2026
 
 Ägarens iSH-underlag visar lyckat backupresultat: 36864 byte, schema 1,
