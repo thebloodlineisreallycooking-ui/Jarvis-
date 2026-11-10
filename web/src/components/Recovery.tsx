@@ -1,0 +1,11 @@
+import React from 'react';
+import { type Workspace, type WorkspaceState } from '../workspace';
+import { Icon } from './Icon';
+export function Recovery({ workspace, state }: { workspace: Workspace; state: WorkspaceState }) {
+  const busy = !!state.busy, unresolved = Object.values(state.operations).filter(op => op.status === 'unknown' || op.status === 'pending' && op.path === '/chat/stream');
+  return <div className="recovery">
+    {state.error && <section className="error-panel" role="alert"><div className="feedback-heading"><Icon name="alert" /><h2>{state.error.operation === 'logout' ? 'Utloggningen är inte bekräftad' : state.error.kind === 'permission' ? 'Begäran nekades' : state.error.kind === 'network' ? 'Anslutningen bröts' : state.error.kind === 'request' ? 'Kontrollera inmatningen' : 'Kunde inte läsa in allt'}</h2></div><p>{state.error.message}</p>{state.error.current && <p>Aktuell titel: {state.error.current.title}. Läs in den senaste versionen innan du ändrar igen.</p>}<button disabled={busy} onClick={() => void (state.error?.operation === 'logout' ? workspace.logout() : workspace.load())}><Icon name="refresh" />{state.error.operation === 'logout' ? 'Try signing out again' : 'Läs in aktuella data'}</button></section>}
+    {state.notice && <p className="inline-notice" role="status">{state.notice}</p>}
+    {unresolved.map(op => <section className="operation-panel" key={op.id} aria-label="Operationsstatus"><div className="feedback-heading"><Icon name={op.status === 'pending' ? 'voice' : 'alert'} /><h2>{op.status === 'pending' ? 'Svar pågår' : 'Resultat okänt — kan vara sparat'}</h2></div><p>{op.label} · {state[op.mode].conversations.find(c => c.id === op.conversationId)?.title ?? 'Ursprungligt samtal'} · {op.mode === 'live' ? 'Live' : 'Demo'}</p>{op.status === 'pending' && <button onClick={() => workspace.stopOperation(op.id)}><Icon name="stop" />Stoppa mottagning</button>}{op.status === 'unknown' && <><button disabled={busy} onClick={() => void workspace.retry(op.id)}><Icon name="refresh" />Försök samma operation igen</button>{!op.path.startsWith('/conversations') && <button disabled={busy} onClick={() => void workspace.checkOperation(op.id)}>Kontrollera sparat resultat</button>}</>}</section>)}
+  </div>;
+}

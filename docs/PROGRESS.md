@@ -1,5 +1,19 @@
 # Progress
 
+## UI pass B — 10 november 2026
+
+Command Center har en kompakt tomvy och 36px kärna i aktiva samtal. Historik
+skiljer användartext, uppgiftsresultat och systemnotiser med text, tid och typ.
+Composer har egen verktygsrad, begränsad autohöjd och Enter för radbyte;
+Ctrl/Cmd+Enter skickar, med IME- och repeat-skydd. Exempel fyller endast utkast.
+Samtalsval/alternativ ligger i native dialog/sheet; fel och osäkra resultat
+har beständiga paneler. Mobil använder sidscroll, desktop en historikyta.
+67 tester, typecheck, build och diff-check passerar. Chromium visar inget
+sidledes överflöde eller tomgångsanimation vid 390/1440 px. Browserprov täcker
+utkast, exempel, Enter, Demo utan POST, kompakt kärna och Escape/fokusretur.
+Visuell revision minskade tomvyn så att mobilens composer-info är läsbar ovanför
+bottennavigationen. Ingen ändring i controller/API/server; full matris följer D.
+
 ## UI pass A — 10 november 2026
 
 Nytt auktoriserat UI-spår `codex/jarvis-ui-refinement` från PR #8-head

@@ -32,7 +32,7 @@ metadata 12–14 px, centrala tryckytor minst 44 px. Fokusring är solid och syn
 | Pass | Leverans | Status |
 | --- | --- | --- |
 | A | Tokens, konsoliderad CSS, typografi, SVG-ikoner, kärna och responsiv shell | Verifierat; fortsatt komposition i B |
-| B | Command Center, tomvy/fylld historik, composer, samtal/navigation/fel | Återstår |
+| B | Command Center, tomvy/fylld historik, composer, samtal/navigation/fel | Implementerat; browserkontroll vid 390/1440 px |
 | C | Voice Focus, kapaciteter, tasks, login, menyer/sheets/dialoger, fixtures | Återstår |
 | D | Browseriteration, kontrast/fokus/rörelse/reflow, regressioner och PR | Återstår |
 
