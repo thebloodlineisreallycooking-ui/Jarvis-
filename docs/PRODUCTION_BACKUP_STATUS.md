@@ -1,5 +1,20 @@
 # Produktionsbackup — kontrollpunkt 9 november 2026
 
+## Avgränsning 10 november — nytt utvecklingsuppdrag
+
+Ingen ny Render-avläsning eller produktionsåtgärd har gjorts i PR #8.
+Ägarens nya överlämningsunderlag uppger att den privata iSH-målkatalogen är
+skapad och att SFTP-anslutning har visats. Detta uppdaterar den äldre uppgiften
+nedan om att katalogen saknas, men är **inte bevis för överförda filer**.
+Ägaren kan för närvarande inte använda iSH.
+
+Render-backupen från 9 november förblir historiskt bekräftad enligt underlaget.
+Överföring av snapshot.db och manifest.json, matchande storlek/hash på enheten,
+slutlig Render-verifiering och exakt skapandetid återstår. Backup, installation
+eller underhållsdeployment ska inte upprepas av utvecklingsuppdraget.
+PRE-INTEGRATION READY betyder inte att backupmålet eller releasegrinden är klar.
+
+
 ## Render-backup skapad — separat iSH-kopia återstår
 
 Ägarens iSH-underlag mottaget 9 november visar att det godkända

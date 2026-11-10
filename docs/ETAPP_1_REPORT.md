@@ -1,5 +1,14 @@
 # Etapp 1 — implementation and verification report
 
+## Historisk Etapp 1-rapport
+
+Denna rapport beskriver PR #7. Den nya, separat auktoriserade utvecklingen i
+PR #8 redovisas i [PRE_INTEGRATION_REPORT](PRE_INTEGRATION_REPORT.md) och
+[kravmatrisen](PRE_INTEGRATION_PLAN.md). Äldre avsnitt här är inte aktuell
+produktionsstatus; läs [senaste backupkontrollpunkten](PRODUCTION_BACKUP_STATUS.md).
+PR #7:s GitHub-head ändras inte av detta uppdrag.
+
+
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 
 Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är

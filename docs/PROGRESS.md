@@ -1,5 +1,34 @@
 # Progress
 
+## PRE-INTEGRATION READY — slutleverans 10 november 2026
+
+Senaste verifierade kodcommit på GitHub:
+`c6794bda7406ea5873d0fe0b95ac7dd4f32bf421` på
+`codex/pre-groq-fish-foundation`, [draft-PR #8](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/8).
+PR-bas är den oförändrade #7-branchen/head `6abfbb0…`; main `a21a3a9…`
+är också oförändrad. Denna efterföljande commit ändrar bara dokumentation.
+
+P0–P9 är klara enligt [slutmatrisen](PRE_INTEGRATION_PLAN.md).
+[Rapporten](PRE_INTEGRATION_REPORT.md) innehåller API/datamodell, exakt filista,
+kod↔schema-tabell, återställningsgränser och fulla testkommandon. Typecheck,
+**65 tester i 6 filer**, build och diff-check passerar. Slutlig ren
+produktionsinstallation/pruning/start passerar. Syntetisk migration/rollback/
+återställning passerar med oförändrat driftkit; schema-3-capture avvisas.
+
+Sista browserkörningen på kodcheckpointen passerar: Chromium 154.0.8037.57,
+Playwright 1.62.1, **36 layoutfall**, inga runtimefel, noll mikrofon-/TTS-anrop.
+Urval av 320px/200%-text, 390px Command Center, 820px uppgiftslista och dialog
+granskat visuellt. WebKit-binär saknas. Detta bevisar inte fysisk Safari,
+verkligt tangentbord, audioformat eller riktiga provideranrop.
+
+**Tre separata statusar:** PRE-INTEGRATION READY; produktionsbackupens privata
+kopia/hash/slutverifiering/exakta tid återstår; release fortsatt stoppad.
+Ingen ny Render-avläsning eller produktionsåtgärd utförd. Nästa konkreta
+uppdrag är [provideröverlämningen](PROVIDER_HANDOFF.md), efter separat
+avgränsning: säkra servercredentials, aktuella modell-/voice-ID:n, verklig
+Groq-chat/transkription, Fish-talsyntes, kontrollerade providerprov och fysisk
+Safari. Ingen automatisk fortsättning, merge eller deployment.
+
 ## PRE-INTEGRATION — slutlig kodcheckpoint 10 november 2026
 
 P1–P8 är implementerade. Typecheck, **65 tester i 6 filer**, build och
