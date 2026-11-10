@@ -1,5 +1,28 @@
 # Progress
 
+## Produktionsbackup slutförd och verifierad på båda målen — 10 november 2026
+
+Separat iSH-kopia är nu överförd och verifierad: snapshot.db 36864 byte,
+manifest.json 520 byte, `snapshot.db: OK`. Slutkontrollen på Render gav
+`verified: true`, schema 1 och samma SHA-256. Skapandetiden är
+`2026-11-09T15:05:34.202Z`. Uppgifterna kommer från ägarens terminalunderlag.
+[Slutrapporten](PRODUCTION_BACKUP_STATUS.md) innehåller sökvägar, hash och
+evidensgränser. Inga fler iSH-kommandon behövs för detta backupuppdrag.
+
+Underhållsprogrammet kör med gamla revisionen, `applicationStarted: false`,
+`restorePending: false` och `busy: false`; Node v24.22.1, ledigt
+1003704320 byte. Färsk connectoravläsning bekräftar Maintenance Mode på,
+auto-deploy Off och samma gamla live-deploy. Auto Sync No är tidigare
+ägarbekräftat. PR #7 är fortsatt omergad och odriftsatt. Ingen migration,
+återställning, radering eller återaktivering har körts i backupuppdraget.
+
+Backupstoppunkten är uppnådd. Nästa steg är separat beslut om en exakt
+kodrelease med rätt schema-/återställningsplan. Schema 3 i senare arbete
+täcks inte av Etapp 1-kitet. Endast sanerad dokumentation ändras här;
+diffkontroll görs och full testsvit upprepas inte.
+
+Äldre kontrollpunkter nedan är historiska; deras öppna backuppunkter är nu lösta.
+
 ## Produktionsbackup skapad på Render — 9 november 2026
 
 Ägarens iSH-underlag visar lyckat backupresultat: 36864 byte, schema 1,
