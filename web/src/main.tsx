@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Mode } from '../../shared/contracts';
+import { Core } from './components/Core';
+import { Icon, type IconName } from './components/Icon';
 import './styles.css';
 import { Conversations } from './components/Conversations';
 import { Tasks } from './components/Tasks';
@@ -9,33 +10,13 @@ import { api, ApiError } from './api';
 import { Workspace, workspaceStatus, activeThread } from './workspace';
 
 const navigation = [
-  { id: 'command', icon: '⌂', label: 'Command Center', available: true },
-  { id: 'voice', icon: '◉', label: 'Voice Focus', available: true },
-  { id: 'agents', icon: '◇', label: 'Agents & Knowledge', available: true },
+  { id: 'command', icon: 'command', label: 'Command Center', available: true },
+  { id: 'voice', icon: 'voice', label: 'Voice Focus', available: true },
+  { id: 'agents', icon: 'agents', label: 'Agents & Knowledge', available: true },
   { id: 'screen', icon: '▣', label: 'Screen', available: false },
   { id: 'workflows', icon: '⌁', label: 'Workflows', available: false },
   { id: 'memory', icon: '◎', label: 'Memory', available: false },
 ];
-
-function Core({ mode, status = 'IDLE' }: { mode: Mode; status?: string }) {
-  return (
-    <div className={`core ${mode}`} role="img" aria-label={`JARVIS core: ${mode} mode, ${status.toLowerCase()}`}>
-      <div className="halo halo-outer" />
-      <div className="halo halo-ticks" />
-      <div className="halo halo-inner" />
-      <div className="axis axis-x" />
-      <div className="axis axis-y" />
-      <div className="core-orb">
-        <div className="energy energy-one" />
-        <div className="energy energy-two" />
-        <span>J</span>
-      </div>
-      <span className="node node-one" />
-      <span className="node node-two" />
-      <span className="node node-three" />
-    </div>
-  );
-}
 
 function useLoginState() {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -117,7 +98,7 @@ function App() {
   </>;
   const unresolved = Object.values(state.operations).filter(op => op.status === 'unknown' || op.status === 'pending');
   return <div className="shell">
-    <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>PERSONAL INTELLIGENCE</small></div></div><nav aria-label="Primary">{navigation.filter(item => item.available).map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => setView(item.id as typeof view)}><span className="nav-icon">{item.icon}</span><span className="nav-label">{item.label}</span></button>)}</nav><div className="sidebar-footer"><span>OWNER SESSION</span></div></aside>
+    <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>PERSONAL INTELLIGENCE</small></div></div><nav aria-label="Primary">{navigation.filter(item => item.available).map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => setView(item.id as typeof view)}><Icon name={item.icon as IconName} /><span className="nav-label">{item.label}</span></button>)}</nav><div className="sidebar-footer"><span>OWNER SESSION</span></div></aside>
     <main className={`canvas view-${view}`}>
       <header><div><span className="eyebrow">JARVIS / {viewTitle.toUpperCase()}</span><h1>{viewTitle}</h1><p>Dina uppgifter, dina samtal.</p></div><div className="session-controls"><button aria-expanded={showTasks} onClick={() => setShowTasks(!showTasks)}>{showTasks ? 'Dölj uppgifter' : 'Visa uppgifter'}</button><button disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}>{state.busy === 'logout' ? 'Signing out…' : 'Sign out'}</button></div></header>
       <div className="request-state" role="status" aria-live="polite">{(state.pendingMode ?? mode).toUpperCase()} · {status}</div>

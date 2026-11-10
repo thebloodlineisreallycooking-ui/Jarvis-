@@ -1,5 +1,18 @@
 # Progress
 
+## UI pass A — 10 november 2026
+
+Nytt auktoriserat UI-spår `codex/jarvis-ui-refinement` från PR #8-head
+`81dff79cac693e122e225e6a7afe6a5de9f6f8de`. PR #7/#8 och main verifierade
+oförändrade, ren checkout. [UI_DESIGN](UI_DESIGN.md) beskriver riktning och pass.
+Tokens, systemtypografi, SVG-ikoner och stilla glaskärna implementerade.
+CSS konsoliderad från grunden; inga nya paket eller externa resurser.
+Typecheck, 65 tester, build och diff-check passerar. Renderat/visuellt granskat
+vid 390×844 och 1440×900: inget sidledes överflöde, noll animationer i vila.
+Nästa pass ger historik/composer rätt utrymme och flyttar samtalskontroller till
+en åtkomlig sheet. Nuvarande långa tomvy är ännu inte slutlig design.
+Inga server-/schema-/provider-/produktionsändringar.
+
 ## PRE-INTEGRATION READY — slutleverans 10 november 2026
 
 Senaste verifierade kodcommit på GitHub:
