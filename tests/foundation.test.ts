@@ -98,6 +98,8 @@ describe('Tasks, ownership and durable operations', () => {
     expect((await alice.agent.get('/api/tasks?search=%25')).body.tasks).toHaveLength(1);
     expect((await alice.agent.get('/api/tasks?status=completed')).body.tasks[0].id).toBe(one.id);
     await alice.agent.get('/api/tasks?limit=101').expect(400);
+    await alice.agent.get('/api/tasks/1e1').expect(400);
+    await alice.agent.post('/api/commands').send({ ...alice.envelope(), text: 'x'.repeat(2001) }).expect(400);
     await alice.agent.patch(`/api/tasks/${one.id}`).send({ ...alice.envelope(), version: 2 }).expect(400);
   });
 });
@@ -147,17 +149,31 @@ describe('Conversations and migrations', () => {
     expect(db.prepare('SELECT id,title,created_at FROM tasks').get()).toEqual({ id: 11, title: 'Original', created_at: 'old' });
     expect(db.pragma('foreign_key_check')).toEqual([]);
     expect(db.pragma('integrity_check')).toEqual([{ integrity_check: 'ok' }]);
+    db.exec("INSERT INTO schema_migrations VALUES(4,'future')");
+    expect(() => migrate(db)).toThrow('Unsupported or incomplete schema history');
   });
   it('regresses Swedish/English parsing and rejects excessive titles', () => {
     expect(parseTask('  Lägg till en uppgift att Granska JARVIS  ')).toBe('Granska JARVIS');
     expect(parseTask('Add task to review')).toBe('review');
     expect(parseTask('a normal message')).toBeNull();
+    for (const incomplete of ['Add task', 'Add a task to', 'Lägg till en uppgift att', 'Lägg till uppgift']) expect(() => parseTask(incomplete)).toThrow();
     expect(() => parseTask('Add a task to ' + 'x'.repeat(201))).toThrow();
     expect(parseTask('Add a task to ' + 'x'.repeat(200))).toHaveLength(200);
   });
 });
 
 describe('HTTP trust boundaries', () => {
+  it('bounds mutation traffic, reports retry time and resets only in a new app process state', async () => {
+    const { app, db } = setup(), alice = await account(app, 'alice');
+    const body = { ...alice.envelope(), text: 'Add task to one bounded operation' };
+    for (let i = 0; i < 120; i++) await alice.agent.post('/api/commands').send(body).expect(201);
+    const limited = await alice.agent.post('/api/commands').send(body).expect(429);
+    expect(Number(limited.headers['retry-after'])).toBeGreaterThan(0);
+    expect(db.prepare('SELECT COUNT(*) FROM tasks').pluck().get()).toBe(1);
+    const again = request.agent(testApp(db));
+    await again.post('/api/auth/login').send({ username: 'alice', password: 'test-password-123' }).expect(200);
+    await again.post('/api/commands').send(body).expect(201);
+  });
   it('enforces Origin, safe errors, no-store, JSON/body limits and login throttling', async () => {
     const { db } = setup();
     const app = createApp(db, { allowedOrigins: ['https://jarvis.example'] });

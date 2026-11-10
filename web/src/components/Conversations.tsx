@@ -5,10 +5,10 @@ export function Conversations({ workspace, state }: { workspace: Workspace; stat
   const content = state[state.mode], current = content.conversations.find(c => c.id === content.activeId);
   const [dialog, setDialog] = useState<'new' | 'rename' | null>(null), [title, setTitle] = useState('');
   return <section className="thread-controls" aria-label="Samtalsval">
-    <label>Samtal<select value={content.activeId ?? ''} onChange={event => void workspace.selectConversation(event.target.value)}>
+    <label htmlFor="conversation-choice">Samtal</label><select id="conversation-choice" value={content.activeId ?? ''} onChange={event => void workspace.selectConversation(event.target.value)}>
       {!content.activeId && <option value="">Välj eller skapa ett samtal</option>}
       {content.conversations.map(c => <option key={c.id} value={c.id}>{c.title}{c.status === 'archived' ? ' · Arkiverat' : ''}</option>)}
-    </select></label>
+    </select>
     <div className="thread-actions"><button disabled={!!state.busy} onClick={() => { setTitle(''); setDialog('new'); }}>Nytt samtal</button>
       <button disabled={!current || !!state.busy} onClick={() => { setTitle(current?.title ?? ''); setDialog('rename'); }}>Byt namn</button>
       <button disabled={!current || !!state.busy} onClick={() => { if (current) void workspace.patchConversation(current.id, { status: current.status === 'open' ? 'archived' : 'open' }); }}>{current?.status === 'archived' ? 'Återöppna samtal' : 'Arkivera samtal'}</button>

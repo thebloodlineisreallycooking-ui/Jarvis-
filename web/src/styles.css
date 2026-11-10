@@ -167,13 +167,17 @@ dialog h2 { margin-top: 0; font-size: 1.35rem; }
 dialog strong { overflow-wrap: anywhere; }
 dialog .danger { border-color: #ff8497; color: #ffc0cb; }
 @media (max-width:650px) {
-  .composer { grid-template-columns: 1fr 44px; }
+  .composer { grid-template-columns: minmax(0, 1fr) 44px; }
   .composer .prompt { display: none; }
   .composer textarea { grid-column: 1; }
-  .composer .mode-switch { grid-column: 1; }
+  .composer .mode-switch { grid-column: 1; width: auto; }
   .composer .send { grid-column: 2; padding: 0; }
   .shell:has(.composer textarea:focus) .sidebar { display: none; }
   .canvas .panel-title { flex-wrap: wrap; }
   .thread-actions button { flex: 1 1 auto; }
 }
 @media (max-height:550px) { .core-stage { min-height: 100px; } .core-stage .core { width: 65px; } }
+/* At 200% text, controls wrap within a 320px viewport rather than widening it. */
+.canvas button, dialog button { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+.composer .mode-switch { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+.operation-panel { min-width: 0; }

@@ -112,6 +112,25 @@ describe('Session and execution boundaries', () => {
     request.mockImplementationOnce((_path, opts) => result({ ...JSON.parse(opts?.body as string), conversationId: second.id }) as never); await workspace.submit();
     expect(activeThread(workspace.getSnapshot()).messages).toEqual([]); expect(Object.values(workspace.getSnapshot().operations)[0]!.status).toBe('unknown');
   });
+  it('rejects a Demo task list at the Live boundary and preserves prior state', async () => {
+    const { workspace, request } = await populate(), before = workspace.getSnapshot().live;
+    const implementation = request.getMockImplementation()!;
+    request.mockImplementation(async (path, options) => path.startsWith('/tasks?') ? { tasks: [{ ...liveTask, id: -1, mode: 'demo' }], counts: { open: 1, completed: 0, all: 1 }, nextCursor: null } : implementation(path, options));
+    await workspace.load(); expect(workspace.getSnapshot().live).toEqual(before); expect(workspace.getSnapshot().error?.kind).toBe('server');
+  });
+  it('rejects mismatched conversation snapshots during refresh and after a valid mutation receipt', async () => {
+    const { workspace, request } = await populate(), before = workspace.getSnapshot().live;
+    const implementation = request.getMockImplementation()!;
+    request.mockImplementation(async (path, options) => {
+      if (path === '/conversations') return { conversations: [second], nextCursor: null };
+      if (path === `/conversations/${conversation.id}`) return { conversation: options?.method === 'PATCH' ? conversation : second };
+      return implementation(path, options);
+    });
+    await workspace.load(); expect(workspace.getSnapshot().live).toEqual(before); expect(workspace.getSnapshot().error?.kind).toBe('server');
+    await workspace.patchConversation(conversation.id, { title: 'Changed' });
+    expect(workspace.getSnapshot().live).toEqual(before); expect(workspace.getSnapshot().error?.kind).toBe('server');
+    expect(Object.values(workspace.getSnapshot().operations)[0]?.status).toBe('succeeded');
+  });
   it('clears all private state on confirmed logout', async () => { const { workspace } = await populate(); await workspace.logout(); expectCleared(workspace); });
   it.each(['command', 'logout'] as const)('clears all private state on %s 401', async operation => {
     const { workspace, request } = await populate(); request.mockRejectedValueOnce(new ApiError('ended', 401, 'session')); await (operation === 'command' ? workspace.submit() : workspace.logout()); expectCleared(workspace);
@@ -132,4 +151,19 @@ describe('Session and execution boundaries', () => {
     first.reject(new ApiError('Old session expired', 401, 'session')); other.resolve({ tasks: [{ ...liveTask, title: 'stale' }], counts: { open: 1, all: 1, completed: 0 }, nextCursor: null });
     await loading; expect(workspace.getSnapshot().session).toBe('authenticated'); expect(workspace.getSnapshot().live.tasks).toEqual([liveTask]);
   });
+  it('shows partial stream in its originating thread and ignores late events after logout', async () => {
+    const { request } = setup();
+    const base = request.getMockImplementation()!;
+    request.mockImplementation(async (path, options) => path === '/capabilities' ? { chat: { state: 'available', reason: 'READY' }, transcription: { state: 'unconfigured', reason: 'PROVIDER_NOT_CONFIGURED' }, speech: { state: 'unconfigured', reason: 'PROVIDER_NOT_CONFIGURED' } } : base(path, options));
+    const final = deferred<CommandResponse>(); let emit!: (event: import('../shared/stream').StreamEvent) => void; let payload!: { requestId: string; conversationId: string; mode: 'live'; text: string };
+    const workspace = new Workspace(request as Api, async (data, options) => { payload = data; emit = options.onEvent; return final.promise; });
+    await workspace.load(); workspace.setDraft('Ordinary provider text'); const pending = workspace.submit();
+    emit({ type: 'delta', operationId: payload.requestId, conversationId: payload.conversationId, index: 2, text: 'partial' });
+    expect(workspace.getSnapshot().operations[payload.requestId]!.partial).toBe('partial');
+    await workspace.selectConversation(second.id); workspace.setMode('demo'); expect(activeThread(workspace.getSnapshot()).messages).toEqual([]);
+    await workspace.logout(); expectCleared(workspace);
+    emit({ type: 'delta', operationId: payload.requestId, conversationId: payload.conversationId, index: 3, text: 'late secret' });
+    final.resolve(result(payload)); await pending; expectCleared(workspace);
+  });
+
 });

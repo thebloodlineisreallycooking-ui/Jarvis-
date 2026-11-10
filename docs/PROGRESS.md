@@ -1,5 +1,49 @@
 # Progress
 
+## PRE-INTEGRATION — slutlig kodcheckpoint 10 november 2026
+
+P1–P8 är implementerade. Typecheck, **65 tester i 6 filer**, build och
+diff-check passerar. De nya testerna omfattar även avvisade svar från fel
+läge/samtal. Ren produktionsinstallation/start och syntetisk recovery har
+passerat; ingen produktionsdatabas har öppnats.
+
+Hela browserflödet passerade i Chromium 154.0.8037.57: tre vyer, tomt/fyllt,
+320/390/430/820 px, 200 procent text, 360 px höjd, uppgiftslivscykel,
+dialog-/returfokus, scrollankare, tråd-/lägesbyten, tappat svar/samma-ID-retry,
+Demo utan skrivningar, logout/401/503 och reducerad rörelse. Provningen hittade
+och åtgärdade select-etikett, dialogens Tab-loop och composerbredd vid stor text.
+Sista klientvalideringen verifieras också i en ny browserkörning före rapporten.
+
+WebKit-binären saknas; fysisk Safari och verkliga provider-/ljudprov ingår i
+nästa separata uppdrag. Provideröverlämningen beskriver exakta kvarvarande prov.
+Nästa steg är slutlig kravmatris/rapport och verifiering av ny GitHub-head i
+draft-PR #8. PR #7, main, Render, driftkit och produktionsbackup är orörda.
+
+## PRE-INTEGRATION P7–P8 och driftövning — 10 november 2026
+
+Verifierad GitHub-checkpoint för P1–P6:
+`45dff7ee37a75b5136fc216559253bec3a0cf484` på utvecklingsbranchen/PR #8.
+ChatProvider, TranscriptionProvider och SpeechProvider används nu i testade
+flöden. Standardfactory är avstängd, capability autentiserad, SSE har ordnade
+identitetsbundna händelser, budget/tidsgräns/avbrott och beständiga slutresultat.
+Testprovider injiceras endast av testharness. Inga riktiga leverantörsanrop.
+Ljudmetadata och ren tillståndsmaskin är testade med syntetiska bytes;
+mikrofon/uppspelning/uppladdning är inte aktiverade i UI.
+
+Lokalt: typecheck, **61 tester**, build och diff-check passerar. Ren
+`NODE_ENV=production`-installation, bygge, dev-pruning, verklig serverstart,
+inloggning/cookies, uppgiftslivscykel, omstarter och replay passerar.
+Syntetisk schema-1→3-migration/återställning passerar med oförändrat driftkit.
+Kitet avvisar schema-3-capture; detta bevisar behovet av en ny driftplan före
+framtida release, inte att produktionsarbete är godkänt.
+
+Browsergranskning pågår i Chromium 154.0.8037.57 / Playwright 1.62.1.
+Tomma tre vyer vid 320/390/430/820 passerade måttkontroller. Ett namnproblem
+för select-etiketten hittades och korrigeras innan hela flödet körs klart.
+WebKits förväntade körbara fil saknas; fysisk Safari och verkligt ljud/provider
+hör fortsatt till senare separat uppdrag. Nästa steg: färdiga browserprov,
+slutlig kravmatris/API-/schemaöversikt och provideröverlämning.
+
 ## PRE-INTEGRATION P1–P6 — verifierad kodcheckpoint 10 november 2026
 
 Draft-PR [#8](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/8)

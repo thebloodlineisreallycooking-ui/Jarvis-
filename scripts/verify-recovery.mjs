@@ -108,11 +108,12 @@ try {
   chmodSync(candidatePath, 0o600);
   const candidate = track(openDatabase(candidatePath));
   check(candidate);
-  for (const table of ['accounts', 'sessions', 'tasks']) {
+  for (const table of ['accounts', 'sessions']) {
     assert.deepEqual(candidate.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all(), before[table]);
   }
+  assert.deepEqual(candidate.prepare('SELECT id,account_id,title,status,created_at FROM tasks ORDER BY id').all(), before.tasks);
   assert.deepEqual(candidate.prepare('SELECT id,account_id,role,body,mode,created_at FROM messages ORDER BY sequence').all(), before.messages);
-  assert.equal(candidate.prepare('SELECT MAX(version) FROM schema_migrations').pluck().get(), 2);
+  assert.equal(candidate.prepare('SELECT MAX(version) FROM schema_migrations').pluck().get(), 3);
   const incompatible = request.agent(oldApp(candidate));
   await incompatible.post('/api/auth/login').send({ username: 'recovery_alice', password }).expect(200);
   await incompatible.get('/api/health').expect(200); // Health alone misses this failure.
@@ -120,13 +121,16 @@ try {
   const failed = await incompatible.post('/api/commands').send({ text: 'Add a task to expose old code incompatibility', mode: 'live' }).expect(500);
   assert.ok(failed.text.length > 0);
   assert.deepEqual(snapshot(candidate), beforeFailure, 'Failed old-code command rolls its task transaction back');
-  assert.throws(() => candidate.prepare('INSERT INTO messages VALUES(?,?,?,?,?,?)'), /7 columns but 6 values/);
-  console.log('PASS: migration preserves rows; actual old server has healthy GET but fails Live writes on schema 2');
+  assert.throws(() => candidate.prepare('INSERT INTO messages VALUES(?,?,?,?,?,?)'), /11 columns but 6 values/);
+  console.log('PASS: migration preserves rows; actual old server has healthy GET but fails Live writes on schema 3');
 
-  const upgraded = request.agent(createApp(candidate));
+  const upgraded = request.agent(createApp(candidate, { allowOriginlessLoopback: true }));
   await upgraded.post('/api/auth/login').send({ username: 'recovery_alice', password }).expect(200);
-  const added = await upgraded.post('/api/commands').send({ text: 'Add a task to represent a post-backup write', mode: 'live' }).expect(201);
+  const conversationId = (await upgraded.get('/api/conversations')).body.conversations[0].id;
+  const added = await upgraded.post('/api/commands').send({ requestId: randomUUID(), conversationId, text: 'Add a task to represent a post-backup write', mode: 'live' }).expect(201);
   assert.deepEqual(added.body.messages.map(message => message.role), ['user', 'assistant']);
+  await assert.rejects(createBackup(config, Database, { release: false }), /Unexpected database schema/);
+  console.log('PASS: unchanged production kit refuses schema-3 capture; future release needs a reviewed version-specific plan');
   const migratedRows = candidate.prepare('SELECT sequence,id FROM messages ORDER BY sequence').all();
   candidate.close();
   const reopened = track(openDatabase(candidatePath));
@@ -139,7 +143,7 @@ try {
     const db = new Database(process.argv[1]);
     db.pragma('journal_mode = WAL');
     db.pragma('wal_autocheckpoint = 0');
-    db.prepare("INSERT INTO tasks(account_id,title,status,created_at) VALUES(1,'synthetic crash write','open','2026-10-14T00:00:00.000Z')").run();
+    db.prepare("INSERT INTO tasks(account_id,title,status,created_at,updated_at) VALUES(1,'synthetic crash write','open','2026-11-10T00:00:00.000Z','2026-11-10T00:00:00.000Z')").run();
     process.exit(0);
   `, candidatePath], { cwd: repo });
   assert.ok(statSync(candidatePath + '-wal').size > 0);

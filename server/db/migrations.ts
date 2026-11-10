@@ -73,4 +73,17 @@ CREATE INDEX messages_conversation_sequence ON messages(account_id,conversation_
 CREATE INDEX tasks_account_id ON tasks(account_id,id);
 CREATE INDEX operations_pending ON operations(status) WHERE status='pending';`
 ];
-export function migrate(db: Database.Database) { db.exec('CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)'); const current = (db.prepare('SELECT COALESCE(MAX(version),0) version FROM schema_migrations').get() as {version:number}).version; const apply = db.transaction(() => { migrations.forEach((sql, index) => { const version=index+1; if(version>current){ db.exec(sql); db.prepare('INSERT INTO schema_migrations VALUES (?,?)').run(version,new Date().toISOString()); } }); }); apply(); }
+export function migrate(db: Database.Database) {
+  db.transaction(() => {
+    db.exec('CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)');
+    const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all() as { version: number }[];
+    if (versions.length > migrations.length || versions.some((row, index) => row.version !== index + 1)) throw new Error('Unsupported or incomplete schema history');
+    migrations.forEach((sql, index) => {
+      if (index >= versions.length) {
+        db.exec(sql);
+        db.prepare('INSERT INTO schema_migrations VALUES (?,?)').run(index + 1, new Date().toISOString());
+      }
+    });
+    if ((db.pragma('foreign_key_check') as unknown[]).length) throw new Error('Migration foreign key check failed');
+  })();
+}

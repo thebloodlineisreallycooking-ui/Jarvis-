@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3';
-import { commandResponseSchema, type CommandResponse, type Conversation } from '../../shared/contracts.js';
+import { commandResponseSchema, conversationSchema, type CommandResponse, type Conversation } from '../../shared/contracts.js';
 import { getConversation, addMessage } from './conversations.js';
 import { mutateTask, type TaskAction } from './tasks.js';
 import { HttpError, notFound } from '../http.js';
@@ -56,7 +56,7 @@ export function createConversation(db: Database.Database, accountId: number, dat
   const payload = { kind: 'conversation_create', mode: 'live', ...data };
   return db.transaction(() => {
     const old = replay(db, accountId, data.requestId, payload);
-    if (old) return JSON.parse(old.result!) as Conversation;
+    if (old) return conversationSchema.parse(JSON.parse(old.result!));
     const now = new Date().toISOString(), id = data.requestId;
     db.prepare('INSERT INTO conversations(account_id,id,title,created_at,updated_at) VALUES(?,?,?,?,?)').run(accountId, id, data.title, now, now);
     beginOperation(db, accountId, data.requestId, id, payload.kind, payload);
@@ -69,7 +69,7 @@ export function patchConversation(db: Database.Database, accountId: number, id: 
   const payload = { kind: 'conversation_patch', mode: 'live', conversationId: id, ...data };
   return db.transaction(() => {
     const old = replay(db, accountId, data.requestId, payload);
-    if (old) return JSON.parse(old.result!) as Conversation;
+    if (old) return conversationSchema.parse(JSON.parse(old.result!));
     const current = getConversation(db, accountId, id);
     if (current.version !== data.version) throw new HttpError(409, 'VERSION_CONFLICT', 'Samtalet har ändrats. Läs in den aktuella versionen.', current);
     db.prepare('UPDATE conversations SET title=?,status=?,version=version+1,updated_at=? WHERE account_id=? AND id=? AND version=?')

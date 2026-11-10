@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -33,7 +33,7 @@ export async function startTestServer(root) {
   const port = await unusedPort();
   const credentials = { username: 'verification_owner', password: randomBytes(24).toString('base64url') };
   const env = { ...process.env, NODE_ENV: 'production', PORT: String(port), DATABASE_PATH: join(directory, 'test.db'),
-    JARVIS_OWNER_USERNAME: credentials.username, JARVIS_OWNER_PASSWORD: credentials.password };
+    JARVIS_ORIGIN: '', JARVIS_OWNER_USERNAME: credentials.username, JARVIS_OWNER_PASSWORD: credentials.password };
   const url = `http://127.0.0.1:${port}`;
   let processHandle;
   let output = '';
@@ -82,28 +82,43 @@ async function verify() {
     await npm(['prune', '--omit=dev'], runtime, env);
     server = await startTestServer(runtime);
     assert.equal((await fetch(server.url)).status, 200);
-    const login = await fetch(`${server.url}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(server.credentials) });
+    const login = await fetch(`${server.url}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', Origin: server.url.replace('http:', 'https:') }, body: JSON.stringify(server.credentials) });
     assert.equal(login.status, 200);
     const cookieHeader = login.headers.get('set-cookie');
     assert.match(cookieHeader, /HttpOnly/i); assert.match(cookieHeader, /Secure/i); assert.match(cookieHeader, /SameSite=Strict/i);
-    const headers = { cookie: cookieHeader.split(';')[0], 'content-type': 'application/json' };
-    const command = await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify({ text: 'Add a task to verify production restart', mode: 'live' }) });
+    const headers = { cookie: cookieHeader.split(';')[0], 'content-type': 'application/json', Origin: server.url.replace('http:', 'https:') };
+    const conversationId = (await (await fetch(`${server.url}/api/conversations`, { headers })).json()).conversations[0].id;
+    const envelope = () => ({ requestId: randomUUID(), conversationId, mode: 'live' });
+    const payload = { ...envelope(), text: 'Add a task to verify production restart' };
+    const command = await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify(payload) });
     assert.equal(command.status, 201);
     const saved = await command.json();
     assert.deepEqual(saved.messages.map(message => message.role), ['user', 'assistant']);
     await server.restart();
     const tasks = await (await fetch(`${server.url}/api/tasks`, { headers })).json();
-    const messages = await (await fetch(`${server.url}/api/messages`, { headers })).json();
+    const messages = await (await fetch(`${server.url}/api/conversations/${conversationId}/messages`, { headers })).json();
     assert.equal(tasks.tasks[0].title, 'verify production restart');
     assert.deepEqual(messages.messages, saved.messages);
-    const demo = await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify({ text: 'Add a task to temporary demo', mode: 'demo' }) });
-    assert.equal(demo.status, 200);
-    assert.equal((await demo.json()).persisted, false);
+    const replay = await (await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify(payload) })).json();
+    assert.deepEqual(replay, saved);
+    const taskUrl = `${server.url}/api/tasks/${saved.task.id}`;
+    const edited = await (await fetch(taskUrl, { method: 'PATCH', headers, body: JSON.stringify({ ...envelope(), version: 1, title: 'Changed after restart', status: 'completed' }) })).json();
+    assert.equal(edited.task.version, 2); assert.ok(edited.task.completedAt);
+    await server.restart();
+    const current = await (await fetch(taskUrl, { headers })).json(); assert.deepEqual(current.task, edited.task);
+    const conflict = await fetch(taskUrl, { method: 'PATCH', headers, body: JSON.stringify({ ...envelope(), version: 1, title: 'Stale' }) }); assert.equal(conflict.status, 409);
+    const caps = await (await fetch(`${server.url}/api/capabilities`, { headers })).json(); assert.equal(caps.chat.state, 'unconfigured');
+    const demo = await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify({ ...envelope(), text: 'Add a task to temporary demo', mode: 'demo' }) });
+    assert.equal(demo.status, 400); // Demo now executes wholly in browser memory.
     assert.equal((await (await fetch(`${server.url}/api/tasks`, { headers })).json()).tasks.length, 1);
+    const deletion = await fetch(taskUrl, { method: 'DELETE', headers, body: JSON.stringify({ ...envelope(), version: 2 }) }); assert.equal(deletion.status, 200);
+    assert.deepEqual((await (await fetch(`${server.url}/api/conversations/${conversationId}/messages`, { headers })).json()).messages, saved.messages);
+    assert.deepEqual(await (await fetch(`${server.url}/api/commands`, { method: 'POST', headers, body: JSON.stringify(payload) })).json(), saved);
+    assert.equal((await (await fetch(`${server.url}/api/tasks`, { headers })).json()).tasks.length, 0);
     assert.equal((await fetch(`${server.url}/api/auth/register`, { method: 'POST', headers, body: JSON.stringify(server.credentials) })).status, 404);
     assert.equal((await fetch(`${server.url}/api/auth/logout`, { method: 'POST', headers })).status, 204);
     assert.equal((await fetch(`${server.url}/api/tasks`, { headers })).status, 401);
-    console.log('PASS: production install/build/start without dev dependencies, static page, health, owner login, secure cookie, Live save, process restart, message order, Demo isolation, closed registration and logout.');
+    console.log('PASS: production install/build/start without dev dependencies, static page, health, owner login, secure cookie, task lifecycle, process restarts, message order, replay after deletion, conflicts, unconfigured providers, Demo rejection, closed registration and logout.');
   } finally {
     if (server) await server.close();
     await rm(runtime, { recursive: true, force: true });

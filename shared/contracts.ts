@@ -7,6 +7,7 @@ export const modeSchema = z.enum(['live', 'demo']);
 export type Mode = z.infer<typeof modeSchema>;
 export const credentialsSchema = z.object({ username: z.string().trim().min(3).max(40).regex(/^[a-zA-Z0-9_-]+$/), password: z.string().min(10).max(128) }).strict();
 export const idSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
+export const idParamSchema = z.string().regex(/^[1-9][0-9]*$/).transform(Number).pipe(idSchema);
 export const requestIdSchema = z.uuid();
 export const conversationIdSchema = z.string().max(80).regex(/^(?:[0-9a-f-]{36}|legacy-\d+|demo-[0-9a-f-]{36})$/i);
 export const titleSchema = z.string().trim().min(1).max(limits.taskTitle);
@@ -62,7 +63,8 @@ export type Capabilities = z.infer<typeof capabilitiesSchema>;
 // A recognised command with an invalid title is an error, never a silently
 // truncated task or an accidental free-text/provider request.
 export function parseTask(text: string): string | null {
-  const match = text.trim().match(/^(?:add (?:a )?task(?: to)?|lägg till (?:en )?uppgift(?: att)?)\s+([\s\S]*)$/i);
+  const match = text.trim().match(/^(add (?:a )?task|lägg till (?:en )?uppgift)(?=\s|$)([\s\S]*)$/i);
   if (!match) return null;
-  return titleSchema.parse(match[1]);
+  const remainder = match[2]!.trim().replace(/^add/i.test(match[1]!) ? /^to(?:\s+|$)/i : /^att(?:\s+|$)/i, '');
+  return titleSchema.parse(remainder);
 }
