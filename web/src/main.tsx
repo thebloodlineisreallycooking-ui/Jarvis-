@@ -15,9 +15,9 @@ import { api, ApiError } from './api';
 import { Workspace, workspaceStatus, activeThread } from './workspace';
 
 const navigation = [
-  { id: 'command', icon: 'command', label: 'Command Center' },
-  { id: 'voice', icon: 'voice', label: 'Voice Focus' },
-  { id: 'agents', icon: 'agents', label: 'Agents & Knowledge' },
+  { id: 'command', icon: 'command', label: 'Command Center', shortLabel: 'Samtal' },
+  { id: 'voice', icon: 'voice', label: 'Voice Focus', shortLabel: 'Röst' },
+  { id: 'agents', icon: 'agents', label: 'Agents & Knowledge', shortLabel: 'Verktyg' },
 ] as const;
 
 function useLoginState() {
@@ -91,7 +91,7 @@ function App() {
   const welcome = <section className="welcome"><Core mode={mode} status={status} /><span className="eyebrow">En sak i taget</span><h2>Vad vill du få gjort?</h2><p>Samla en tanke. Sätt nästa steg.</p><div className="examples" aria-label="Exempel som fyller i utkast"><button disabled={!active || active.status === 'archived'} onClick={() => example('Lägg till en uppgift att planera veckan')}><Icon name="plus" /><span>Planera veckan<small>Skapa en uppgift</small></span><Icon name="chevron" /></button><button disabled={!active || active.status === 'archived'} onClick={() => example('Add a task to review my notes')}><Icon name="plus" /><span>Review my notes<small>Try a command in English</small></span><Icon name="chevron" /></button></div></section>;
   return <div className={`shell mode-${mode}`}>
     <a className="skip-link" href="#main-content">Hoppa till innehållet</a>
-    <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>Din privata arbetsyta</small></div></div><nav aria-label="Primary">{navigation.map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}><Icon name={item.icon as IconName} /><span className="nav-label">{item.label}</span></button>)}</nav><div className="sidebar-footer"><span className="status-label"><Icon name="lock" />Privat session</span><p>{mode === 'demo' ? 'Demo · Tillfälligt innehåll' : 'Live · Sparas på ditt konto'}</p></div></aside>
+    <aside className="sidebar"><div className="brand"><div className="brand-mark">J</div><div>JARVIS<small>Din privata arbetsyta</small></div></div><nav aria-label="Primary">{navigation.map(item => <button key={item.id} aria-label={item.label} data-view={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}><Icon name={item.icon as IconName} /><span className="nav-label"><span className="nav-label-full">{item.label}</span><span className="nav-label-short">{item.shortLabel}</span></span></button>)}</nav><div className="sidebar-footer"><span className="status-label"><Icon name="lock" />Privat session</span><p>{mode === 'demo' ? 'Demo · Tillfälligt innehåll' : 'Live · Sparas på ditt konto'}</p></div></aside>
     <main id="main-content" tabIndex={-1} className={`canvas view-${view}`}>
       <header className="app-header"><div><span className="eyebrow">JARVIS <span className={`mode-tag ${mode}`}>/ {mode === 'demo' ? 'Demo' : 'Privat'}</span></span><h1>{viewTitle}</h1></div><div className="session-controls"><button className="ghost icon-button" aria-label="Visa uppgifter" aria-haspopup="dialog" onClick={() => setShowTasks(true)}><Icon name="tasks" /></button><button className="ghost icon-button" aria-label="Logga ut" title="Logga ut" disabled={state.busy === 'logout'} onClick={() => void workspace.logout()}><Icon name="logout" /></button></div></header>
       <div className="workspace-heading"><Conversations workspace={workspace} state={state} /><div className="request-state" role="status" data-status={status} aria-live="polite"><span className={`mode-tag ${mode}`}>{(state.pendingMode ?? mode) === 'demo' ? 'Demo' : 'Live'}</span><span className="status-dot" />{activity}</div></div>

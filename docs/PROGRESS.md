@@ -1,5 +1,39 @@
 # Progress
 
+## UI pass D — verifierad slutleverans 10 november 2026
+
+Alla fyra visuella pass är klara på `codex/jarvis-ui-refinement`,
+[draft-PR #9](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/9)
+mot PR #8-branchen. [UI_DESIGN](UI_DESIGN.md) redovisar beslut, exakt filista,
+komponenter, 54 layoutfall, kontrast, revisioner och kvarvarande enhetskontroller.
+
+Typecheck, 67 tester i 7 filer, build och diff-check passerar efter kodändringar.
+Chromium 154.0.8037.57/Playwright 1.62.1: 54 layoutfall utan runtimefel. Login,
+tre vyer, 320/390/430/820/1440px, 420px höjd, 200% rottext/CSS-zoom, långa titlar,
+nya/äldre meddelanden, dialogfokus/inert bakgrund, task-livscykel, sökning,
+403/500/nätfel, 401/logout, okänt resultat och sena svar mellan samtal/lägen.
+Tester fångar också att ett tomt nytt samtal inte visar falskt nytt innehåll.
+Åtta isolerade röstfixtures passerar utan API-/ljudanrop, med reduced motion
+samt simulerad hidden-paus. 36 valda kontrastkombinationer passerar AA-målen.
+
+Slutbilder granskade visuellt för bl.a. mobil login/röst/sheets, desktop tom/fylld,
+iPad kapaciteter, uppgiftsrader, 320px stor text och felpanel. Revisionerna gav
+mer plats åt composer, korta mobilnamn, dold hopplänk även vid stor text och en
+enda uppgiftsrubrik. Dialogbilder tas efter avslutad övergång. Bilder och JSON
+ligger utanför git i `/workspace/work/ui-final-reviewed/` och `ui-fixtures/`.
+
+Lokala mätningar: navigation 246,8ms, automatiserad inloggning till redo 258ms;
+varm reload FCP 56ms. Fylld DOM 528 element vid 1440×900 med 35 syntetiska
+uppgifter/74 lagrade meddelanden. Ingen CPU-/nätstrypning. JS 305,02kB
+(92,76kB gzip), CSS 25,03kB (5,91kB gzip); inga nya paket. Ingen garanti för
+mobil prestanda. Mobilens pagingankare flyttade -0,5px.
+
+Main `a21a3a9…`, PR #7-head `6abfbb0…` och PR #8-head `81dff79…` verifierade
+oförändrade. Ingen merge, deployment, produktions-/backup-/provider-/ljudåtgärd.
+WebKit saknas. Fysisk Safari, riktigt iPhone-tangentbord, OS-zoom, VoiceOver och
+safe-area-/dialogbeteende återstår efter separat godkänd deployment. Future
+röststatus är enbart designspecifikation; trading/produktutveckling är roadmap.
+
 ## UI pass C — 10 november 2026
 
 Voice Focus har egen komposition och tydligt avstängd ljudfunktion. Åtta

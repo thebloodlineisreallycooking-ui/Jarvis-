@@ -19,7 +19,7 @@ export function History({ workspace, state, empty }: { workspace: Workspace; sta
     if (previousKey.current !== key) { following.current = true; anchor.current = null; setNewContent(false); }
     if (anchor.current && thread.messages[0]?.id !== anchor.current.first) { const m = metrics(); scroll(anchor.current.top + m.height - anchor.current.height, anchor.current.page); anchor.current = null; }
     else if (following.current && (thread.messages.length || partial)) scroll(metrics().height);
-    else if (last !== previousLast.current || partial) setNewContent(true);
+    else if (last && last !== previousLast.current || partial) setNewContent(true);
     previousKey.current = key; previousLast.current = last;
   }, [key, thread.messages, last, partial]);
   return <div className={`history-wrap ${!thread.messages.length ? 'history-empty' : ''}`}>
