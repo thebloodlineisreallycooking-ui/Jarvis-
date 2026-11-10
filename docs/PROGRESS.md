@@ -2,6 +2,10 @@
 
 ## UI pass D — verifierad slutleverans 10 november 2026
 
+Verifierad och pushad kodcommit:
+`7cfb2e4b6af4896f5b1f99122799ecaf48b3aee5`. Den efterföljande commit som
+lägger in denna referens ändrar endast dokumentation; kodsviten upprepas inte.
+
 Alla fyra visuella pass är klara på `codex/jarvis-ui-refinement`,
 [draft-PR #9](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/9)
 mot PR #8-branchen. [UI_DESIGN](UI_DESIGN.md) redovisar beslut, exakt filista,

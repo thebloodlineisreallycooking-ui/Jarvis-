@@ -85,7 +85,7 @@ JARVIS TRADING och JARVIS PRODUCT DEVELOPMENT ligger kvar enbart i roadmap.
 A (`c91f611`): tokens, typografi, SVG-ikoner, kärna och konsoliderad CSS.
 B (`2df71da`): samtalsflöde, multiline composer, historik, navigation och recovery.
 C (`dca4f39`): röstvy, kapaciteter, uppgifter, login och isolerade fixtures.
-D: hela browserflödet, kontrastmätning och visuell iteration.
+D (`7cfb2e4`): hela browserflödet, kontrastmätning och visuell iteration.
 
 Faktiska bilder ledde till mindre tomvy, tidigare textfält i mobilens röstvy,
 mer plats för desktop-composer, kortare mobilnamn vid stor text, helt dold
