@@ -6,7 +6,8 @@ import { dirname, join, resolve } from 'node:path';
 
 export const SERVICE_ID = 'srv-db1vle3bc2fs73em1t30';
 export const BASE_COMMIT = 'a21a3a9b4877ce31afc8eec28ae5557854f01b01';
-const tables = ['accounts', 'sessions', 'tasks', 'messages', 'schema_migrations'];
+export const OPERATIONS_VERSION = 'schema3-capture-v1';
+const legacyTables = ['accounts', 'sessions', 'tasks', 'messages', 'schema_migrations'];
 const idPattern = /^backup-[a-f0-9-]{36}$/;
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 
@@ -54,7 +55,7 @@ export async function hashFile(path) {
 }
 export function runtimeStatus(config) {
   const disk = statfsSync(config.root, { bigint: true });
-  return { serviceId: config.serviceId, deployedCommit: config.commit, node: process.version,
+  return { serviceId: config.serviceId, deployedCommit: config.commit, operationsVersion: OPERATIONS_VERSION, node: process.version,
     databasePath: config.db, availableBytes: String(disk.bavail * disk.bsize),
     applicationStarted: false, restorePending: existsSync(join(config.ops, 'restore-pending.json')) };
 }
@@ -84,10 +85,19 @@ export function assertNoDatabaseUsers(config) {
 function inspect(db) {
   check(JSON.stringify(db.pragma('integrity_check')) === JSON.stringify([{ integrity_check: 'ok' }]), 'SQLite integrity check failed');
   check(db.pragma('foreign_key_check').length === 0, 'SQLite foreign key check failed');
-  const schema = db.prepare('SELECT MAX(version) FROM schema_migrations').pluck().get();
-  check(schema === 1 || schema === 2, 'Unexpected database schema');
+  const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').pluck().all();
+  const schema = versions.at(-1);
+  check([1, 2, 3].includes(schema) && versions.length === schema && versions.every((version, index) => version === index + 1), 'Unexpected database schema');
+  // Keep the original five-table manifest shape for existing schema-1/2 backups.
+  // Schema 3 adds durable conversations and operation receipts; neither may be
+  // omitted from capture verification. Unknown future schemas fail closed.
+  const tables = schema === 3 ? [...legacyTables, 'conversations', 'operations'] : legacyTables;
+  const actualTables = db.prepare("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").pluck().all();
+  check(JSON.stringify(actualTables) === JSON.stringify([...tables].sort()), 'Unexpected database tables');
   return { schema, counts: Object.fromEntries(tables.map(table => [table, db.prepare(`SELECT COUNT(*) FROM ${table}`).pluck().get()])),
-    unsupportedStatuses: db.prepare("SELECT COUNT(*) FROM tasks WHERE status NOT IN ('open')").pluck().get() };
+    unsupportedStatuses: db.prepare(schema === 3
+      ? "SELECT COUNT(*) FROM tasks WHERE status NOT IN ('open','completed')"
+      : "SELECT COUNT(*) FROM tasks WHERE status NOT IN ('open')").pluck().get() };
 }
 function requireSpace(config, required) {
   const disk = statfsSync(config.root, { bigint: true });

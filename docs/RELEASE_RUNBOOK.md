@@ -1,5 +1,6 @@
 # Etapp 1 — körplan för backup, release och återställning
 
+## Aktuell kontrollpunkt 10 november 2026 — backup klar, stopp före release
 ## Schema 3 ingår inte i denna produktionskörplan
 
 Utvecklings-PR #8, 10 november 2026, tillför schema 3. Den här körplanens
@@ -12,14 +13,23 @@ aktuell verifierad backup på båda målen och separat godkännande. Ingen merge
 deployment, migrering eller återställning utförs genom utvecklingsuppdraget.
 
 
-## Aktuell kontrollpunkt 9 november 2026
 
-Render-backupen är skapad enligt ägarens framgångssvar: schema 1, 36864 byte.
-ID, SHA-256 och evidensgränser finns i [produktionsstatus](PRODUCTION_BACKUP_STATUS.md).
-Upprepa inte backup, installation eller underhållsdeployment. Fortsätt vid steg 5:
-privat iSH-kopia via SFTP, verifierad storlek/hash och avslutande Render-verifiering.
-Underhåll är fortsatt på, auto-deploy Off och PR #7 omergad/odriftsatt enligt
-färska connectoravläsningar. Stopp före release/migration kvarstår.
+Steg 1–5 för det godkända backupuppdraget är slutförda. Render-kopian och den
+separata iSH-kopian är verifierade: schema 1, 36864 byte och matchande SHA-256.
+iSH-manifestet är 520 byte. Slutkontrollen gav `verified: true`, app ej startad,
+ingen väntande återställning eller aktiv operation. Backupens skapandetid är
+`2026-11-09T15:05:34.202Z`. Se [slutrapporten](PRODUCTION_BACKUP_STATUS.md)
+för exakta sökvägar, hash, runtime och skillnaden mellan terminalunderlag och
+connectoravläsning.
+
+Upprepa inte installation, underhållsdeployment, backup eller överföring.
+Underhåll är fortsatt på, auto-deploy Off och Auto Sync No enligt tidigare
+ägarbekräftelse. PR #7 är omergad och odriftsatt. **Stanna här: steg 6–9,
+migration, återställning och återaktivering kräver separat releasebeslut.**
+
+Körplanens releaseförslag gäller Etapp 1/schema 2. Senare PR #8/#9 med schema 3
+kräver en versionsanpassad drift- och återställningsplan. Äldre kontrollpunkter
+nedan bevaras som historik och ersätter inte denna slutstatus.
 
 ## Aktivt backupgodkännande 22 oktober 2026
 

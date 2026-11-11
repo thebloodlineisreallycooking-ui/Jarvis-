@@ -1,5 +1,32 @@
 # Etapp 1 — Render-granskning och återställningsplan
 
+## Aktuell driftstatus 10 november 2026 — backup klar
+
+Backupuppdraget är slutfört med verifierad Render-kopia och separat privat
+iSH-kopia på iPhone. Storlekar: snapshot.db 36864 byte, manifest.json 520 byte;
+SHA-256 matchar och slutlig Render-kontroll gav `verified: true`, schema 1.
+Skapad `2026-11-09T15:05:34.202Z`. Se
+[produktionsbackupens slutrapport](PRODUCTION_BACKUP_STATUS.md).
+
+Appen ligger kvar i särskilt underhåll med det låsta `maintenance.mjs` som
+Start Command. Maintenance Mode är på och auto-deploy Off enligt färsk
+connectoravläsning; Auto Sync No är tidigare ägarbekräftat.
+Aktiv kod är `a21a3a9b4877ce31afc8eec28ae5557854f01b01`, live-deploy
+`dep-dbdnalcs728c73cic4qg`. Terminalunderlaget visar Node v24.22.1,
+1003704320 lediga byte och `applicationStarted: false`.
+
+PR #7 är omergad och odriftsatt. Inga migrationer eller återställningar har
+körts i backupuppdraget. Återgå inte till `npm start` eller aktiverad automatik
+utan separat beslut. Inga fler backup-/överföringssteg återstår.
+Release kräver en exakt godkänd revision och kompatibel återställningsplan;
+senare schema 3 omfattas inte av det befintliga Etapp 1-kitet.
+Fysisk Safari kontrolleras efter separat godkänd deployment.
+
+Äldre driftobservationer och uppgifter om återstående backup nedan är
+historiska. Deras ordinarie konfigurationsvärden beskriver inte det aktuella
+underhållsläget.
+
+
 ## Historiska observationer, ingen ny driftavläsning i PR #8
 
 Denna fil behåller de tidigare observationerna. Senaste backupstatus finns i

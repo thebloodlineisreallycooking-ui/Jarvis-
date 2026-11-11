@@ -1,5 +1,54 @@
 # Progress
 
+## Schema-3-driftkit förberett — 11 november 2026
+
+Ny lokal verktygsversion `schema3-capture-v1` bevarar samtliga sju tabeller
+vid capture av schema 3 och redovisar sin version i status. Originalkitets
+schema-1-manifest kan fortfarande verifieras och återställas. Backupens
+releasegrind är fortsatt låst till den gamla kodrevisionen och schema 1;
+restore accepterar endast samma baseline. Framtida/ofullständiga scheman och
+okända tabeller avvisas. Ingen produktionsinstallation har gjorts.
+
+Den återanvända syntetiska återställningsövningen passerar: gammalt WAL-kit,
+schema 1→3, sju tabeller inklusive completed/archived/operations, avvisat
+schema-3-restoremål utan databasändring, avbruten karantän/installation,
+återupptagning under underhåll och gamla kodens isolerade skrivningar efter
+återställning. Produktionsdata används inte. En utökad releasekörplan följer
+med exakt kitrevision/checksummor och bibehållen separat deploygräns.
+
+## PR-kedjans dokumentation sammanförd — 11 november 2026
+
+PR #7:s verifierade backupstatus från `9bdf51a` har sammanförts med PR #8.
+Konflikterna berörde endast dokumentation; både backupresultatet och tidigare
+utvecklingsverifiering bevaras. Merge till main är nu uttryckligen godkänd av
+ägaren efter granskning. Deployment och återöppning ingår inte. Förberedelse av
+schema-3-återställningsplan pågår. Render har fortfarande auto-deploy Off och
+startar det installerade underhållsprogrammet enligt ny läsavläsning.
+
+## Produktionsbackup slutförd och verifierad på båda målen — 10 november 2026
+
+Separat iSH-kopia är nu överförd och verifierad: snapshot.db 36864 byte,
+manifest.json 520 byte, `snapshot.db: OK`. Slutkontrollen på Render gav
+`verified: true`, schema 1 och samma SHA-256. Skapandetiden är
+`2026-11-09T15:05:34.202Z`. Uppgifterna kommer från ägarens terminalunderlag.
+[Slutrapporten](PRODUCTION_BACKUP_STATUS.md) innehåller sökvägar, hash och
+evidensgränser. Inga fler iSH-kommandon behövs för detta backupuppdrag.
+
+Underhållsprogrammet kör med gamla revisionen, `applicationStarted: false`,
+`restorePending: false` och `busy: false`; Node v24.22.1, ledigt
+1003704320 byte. Färsk connectoravläsning bekräftar Maintenance Mode på,
+auto-deploy Off och samma gamla live-deploy. Auto Sync No är tidigare
+ägarbekräftat. PR #7 är fortsatt omergad och odriftsatt. Ingen migration,
+återställning, radering eller återaktivering har körts i backupuppdraget.
+
+Backupstoppunkten är uppnådd. Nästa steg är separat beslut om en exakt
+kodrelease med rätt schema-/återställningsplan. Schema 3 i senare arbete
+täcks inte av Etapp 1-kitet. Endast sanerad dokumentation ändras här;
+diffkontroll görs och full testsvit upprepas inte.
+
+Äldre kontrollpunkter nedan är historiska; deras öppna backuppunkter är nu lösta.
+
+
 ## PRE-INTEGRATION READY — slutleverans 10 november 2026
 
 Senaste verifierade kodcommit på GitHub:

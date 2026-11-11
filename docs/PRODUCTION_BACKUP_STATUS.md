@@ -1,4 +1,112 @@
-# Produktionsbackup — kontrollpunkt 9 november 2026
+# Produktionsbackup — slutförd 10 november 2026
+
+## Slutresultat och stoppunkt
+
+Det godkända backupuppdraget är slutfört. En konsekvent SQLite-backup finns på
+Render och en separat privat kopia finns i ägarens iSH på iPhone. Storlek och
+SHA-256 matchar. Inga fler iSH-kommandon behövs för detta backupuppdrag.
+
+**JARVIS är fortfarande i särskilt underhållsläge.** Appen och migratorn startas
+inte av det låsta underhållsprogrammet, även efter en vanlig processomstart.
+Auto-deploy förblir Off. Blueprint Auto Sync är No enligt tidigare
+ägarbekräftelse; den uppgiften har inte ersatts av en ny direkt avläsning.
+Ingen automatik har återaktiverats.
+
+| Uppgift | Verifierat resultat |
+| --- | --- |
+| Workspace / tjänst | My Workspace / jarvis-private |
+| Service-ID | `srv-db1vle3bc2fs73em1t30` |
+| Produktionsdatabas | `/var/data/jarvis.db` |
+| Aktiv kodrevision | `a21a3a9b4877ce31afc8eec28ae5557854f01b01` |
+| Live-deploy | `dep-dbdnalcs728c73cic4qg` |
+| Driftkit | `dade9b6c16df3e0ec61484e0ff10dd558744d695` |
+| Backup-ID | `backup-52746269-cf73-4e3c-85bc-fb4402f049d8` |
+| Skapad enligt manifestets createdAt | `2026-11-09T15:05:34.202Z` (9 november 16:05:34.202 svensk tid) |
+| Databasfil / manifest på iPhone | `36864` / `520` byte |
+| Schema | `1` i källan vid backup och i den slutverifierade kopian |
+| Node / ledigt på Render vid slutkontroll | `v24.22.1` / `1003704320` byte |
+| Runtime vid slutkontroll | `applicationStarted: false`, `restorePending: false`, `busy: false` |
+
+Samma SHA-256 för snapshot.db på båda målen:
+
+```text
+9dd80e4f8fac3fcec0e204b219d9fabd5d37b80f98a905be1de4951816a21e08
+```
+
+Båda katalogerna innehåller `snapshot.db` och `manifest.json`:
+
+- Render: `/var/data/jarvis-backups/backup-52746269-cf73-4e3c-85bc-fb4402f049d8/`.
+- iPhone/iSH: `/root/JARVIS-backuper/backup-52746269-cf73-4e3c-85bc-fb4402f049d8/`.
+
+Render-verktyget skapade katalog/filer med 0700/0400. iSH-katalogen skapades
+privat med 0700 enligt tidigare terminalunderlag. Båda iSH-filerna sattes till
+0400 innan den lyckade storleks-/hashkontrollen. Ingen databas, detaljmanifest,
+skärmbild, logg eller credential sparas i repositoryt.
+
+## Kontrollresultat och evidensgränser
+
+- Ägarens iSH-underlag den 10 november visar slutförd SFTP-hämtning av båda
+  filerna direkt till den privata telefonmappen. Lokal `wc -c` gav 36864 och
+  520 byte; `sha256sum -c -` gav `snapshot.db: OK`.
+- Det efterföljande SSH-kommandot körde det installerade verktygets `verify`,
+  därefter `status` och läste endast manifestets `createdAt`. Underlaget kl.
+  20:19 visar `verified: true`, schema 1, 36864 byte och samma hash samt
+  runtimevärdena ovan. Ingen ny backup, migration eller återställning kördes.
+- Enligt den granskade kitkoden passerar `verify` processgrinden innan kopian
+  öppnas. Den verifierar identitet, filtyp och sökväg, avsaknad av sidofiler,
+  storlek, SHA-256, DELETE-journalläge, integritet, foreign keys och
+  överensstämmelse med manifestets schema, statusvalidering och tabellantal.
+  Källans oförändrade data och överensstämmelse med kopian kontrollerades av det
+  ursprungliga backupkommandot under skrivstoppet. Slutkontrollen är ingen ny
+  inventering av produktionsdatabasens innehåll.
+- Terminalresultaten är användartillhandahållet runtimeunderlag; agenten har
+  inte själv haft Shell-åtkomst eller hämtat databasfilerna. Manifestets övriga
+  innehåll stannar privat. Exakt skapandetid är nu avläst och ersätter den
+  tidigare osäkerheten.
+- En färsk Render-connectoravläsning den 10 november bekräftar rätt repo,
+  main-branch, exakt underhållsstart, Maintenance Mode på, auto-deploy Off och
+  samma gamla live-deploy. Ingen pågående eller köad deployment syns i de fem
+  senaste resultaten. GitHub visar PR #7 som öppen, draft och omergad.
+- SSH-klientens tidigare dokumenterade hostkeys-varning återkom, men
+  överföring och kontroller avslutades normalt. Ingen host-key-kontroll
+  stängdes av; orsaken till varningen är fortfarande inte fastställd.
+
+Start Command är fortsatt:
+
+```sh
+node /var/data/jarvis-ops/dade9b6c16df3e0ec61484e0ff10dd558744d695/maintenance.mjs
+```
+
+Installerad kitversion och de tre SHA-256-värden som kontrollerades mot GitHub
+före installation finns i avsnittet **Verktygsversion och verifierade checksummor**
+nedan. Installation och backup ska inte upprepas.
+
+## Nästa separata releasebeslut
+
+Backupkravet är uppfyllt; detta är inte ett releasegodkännande. PR #7 har inte
+mergats eller driftsatts. Ingen migration eller återställning har körts i detta
+backupuppdrag. Original och båda backuperna är kvar. Behåll underhåll och pausad
+automatik tills ett separat beslut finns.
+
+Nästa steg är att låsa den avsedda releasecommitten och granska dess schema-
+och återställningsväg innan ägaren godkänner merge/deployment. Körplanen gäller
+Etapp 1/schema 2. Den ger inte stöd för att använda det gamla kitet mot schema 3
+i senare utvecklingsarbete. Om PR #8/#9 ska ingå behövs en versionsanpassad
+driftplan; denna dokumentuppdatering ändrar inte deras kod eller brancher.
+Fysisk Safari, iPhone-tangentbord och VoiceOver hör till ett separat godkänt
+deploy- och acceptansfönster. Inga nya betalda resurser behövs för backupavslutet.
+
+## Dokumentationskontroll
+
+Denna uppföljning ändrar endast fem dokument. Källfilerna lästes genom
+GitHub-connectorn vid `6abfbb0572f526fa9ad7c52f429c74ea2c1226ff`, samma
+revision som den lokala arbetsbranchen. `git diff --check` passerade före
+extern commit. Inga applikationstester upprepas för denna statusuppdatering.
+
+## Historik — tidigare kontrollpunkter
+
+Nedanstående avsnitt är historiska. Äldre uppgifter om återstående överföring,
+hashkontroll, skapandetid eller godkännande ersätts av slutresultatet ovan.
 
 ## Avgränsning 10 november — nytt utvecklingsuppdrag
 
