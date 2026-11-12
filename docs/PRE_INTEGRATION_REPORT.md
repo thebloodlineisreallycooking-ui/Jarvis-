@@ -1,5 +1,14 @@
 # PRE-INTEGRATION — leveransrapport
 
+## Nyare driftkontrollpunkt — 12 november 2026
+
+Rapporten nedan bevarar utvecklingsverifieringen från 10 november. Dess äldre
+uppgifter om ofullständig produktionsbackup och saknad schema-3-körplan är
+ersatta av [backupslutrapporten](PRODUCTION_BACKUP_STATUS.md) och
+[den samlade releasekörplanen](SCHEMA_3_RELEASE_RUNBOOK.md). Det nya kitet har
+syntetiskt testad schema-3-capture och återgång till originalets schema 1.
+Det är inte installerat i produktion. Merge är nu godkänd; deployment är separat.
+
 10 november 2026. **PRE-INTEGRATION READY.** P0–P9 är klara inom det
 auktoriserade utvecklingsuppdraget. Den detaljerade [kravmatrisen](PRE_INTEGRATION_PLAN.md)
 anger status och bevis per avgränsat krav. AI och röst är fortfarande ej anslutna.

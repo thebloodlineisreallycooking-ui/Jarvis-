@@ -1,5 +1,14 @@
 # Produktionsbackup — slutförd 10 november 2026
 
+## Efterföljande beslut 12 november 2026
+
+Backupen nedan är fortfarande slutförd; inga fler iSH-kommandon behövs för den.
+Ägaren har därefter godkänt merge av den förberedda PR-kedjan. Detta ändrar inte
+produktionsläget: underhåll och avstängd auto-deploy är åter avlästa, gammal kod
+fortfarande live. [Ny schema-3-releaseplan](SCHEMA_3_RELEASE_RUNBOOK.md) är
+förberedd; deployment, migration, restore och återöppning är separat beslut.
+Nedanstående formuleringar om PR-status avser backupens historiska stoppunkt.
+
 ## Slutresultat och stoppunkt
 
 Det godkända backupuppdraget är slutfört. En konsekvent SQLite-backup finns på

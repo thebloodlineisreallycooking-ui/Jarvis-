@@ -1,5 +1,38 @@
 # Progress
 
+## Mergeförberedelser klara — 12 november 2026
+
+Samlad kod `64aad39e4d515f4de8c45c97a3112fa3e4b3a8b4` är sparad på GitHub.
+Nytt versionslåst driftkit `3c8c7110a9d58200ad0333dc0278e5374355cb0a` stödjer
+schema-3-capture; baseline-restore förblir schema 1. [Ny körplan](SCHEMA_3_RELEASE_RUNBOOK.md)
+anger exakta SHA:n, tre filchecksummor, startgrind, aktualitetskontroll,
+deploy/acceptans, dataeffekter och konkret rollback utan appstart under restore.
+
+Ny verifiering: typecheck, 67 tester/7 filer, build, diff-check, syntetisk
+WAL/migration/avbruten restore/omstart samt ren production-installation och
+faktisk serverstart efter borttagna dev-beroenden passerar. App/UI-koden är
+oförändrad mot PR #9; 54 browserfall och 36 kontrastpar är tidigare verifiering.
+UI-proven upprepas inte för enbart ops-/dokumentändringar. Den 12 november
+passerade även körplanens shell-/Node-syntax, baselinekontroll inklusive
+avvisad källändring och intern API-acceptans med syntetiska lokala data.
+
+Render läst 12 november: auto-deploy Off, underhåll på, gamla underhållsstarten,
+aktiv `a21a3a9...`, ingen pågående/köad deploy i senaste listan. Blueprint
+Auto Sync No är tidigare ägarbekräftat. Backup på båda mål är klar; inga nya
+iSH-steg. Ägaren har godkänt mergekedjan #7→#8→#9. Mergestatus ska verifieras
+separat på GitHub; ingen produktionsåtgärd ingår i denna kontrollpunkt.
+
+Nästa steg för produktionsgrunden är separat godkänd deploy och fysisk Safari.
+Ingen ny bred feature-etapp behövs före den avgränsade providerintegrationen.
+
+## Samlad releasekandidat PR #7–9 — 11 november 2026
+
+UI-branchens kod har sammanförts med den verifierade backupdokumentationen
+och schema-3-driftkitet. Konflikten i denna historik har lösts genom att
+bevara både UI-verifieringen och de nyare driftkontrollpunkterna. Samlad
+verifiering och en versionslåst körplan genomförs före den godkända mergekedjan.
+Produktion är fortfarande under underhåll och ingen deployment ingår.
+
 ## Schema-3-driftkit förberett — 11 november 2026
 
 Ny lokal verktygsversion `schema3-capture-v1` bevarar samtliga sju tabeller
@@ -48,6 +81,86 @@ diffkontroll görs och full testsvit upprepas inte.
 
 Äldre kontrollpunkter nedan är historiska; deras öppna backuppunkter är nu lösta.
 
+
+
+## UI pass D — verifierad slutleverans 10 november 2026
+
+Verifierad och pushad kodcommit:
+`7cfb2e4b6af4896f5b1f99122799ecaf48b3aee5`. Den efterföljande commit som
+lägger in denna referens ändrar endast dokumentation; kodsviten upprepas inte.
+
+Alla fyra visuella pass är klara på `codex/jarvis-ui-refinement`,
+[draft-PR #9](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/9)
+mot PR #8-branchen. [UI_DESIGN](UI_DESIGN.md) redovisar beslut, exakt filista,
+komponenter, 54 layoutfall, kontrast, revisioner och kvarvarande enhetskontroller.
+
+Typecheck, 67 tester i 7 filer, build och diff-check passerar efter kodändringar.
+Chromium 154.0.8037.57/Playwright 1.62.1: 54 layoutfall utan runtimefel. Login,
+tre vyer, 320/390/430/820/1440px, 420px höjd, 200% rottext/CSS-zoom, långa titlar,
+nya/äldre meddelanden, dialogfokus/inert bakgrund, task-livscykel, sökning,
+403/500/nätfel, 401/logout, okänt resultat och sena svar mellan samtal/lägen.
+Tester fångar också att ett tomt nytt samtal inte visar falskt nytt innehåll.
+Åtta isolerade röstfixtures passerar utan API-/ljudanrop, med reduced motion
+samt simulerad hidden-paus. 36 valda kontrastkombinationer passerar AA-målen.
+
+Slutbilder granskade visuellt för bl.a. mobil login/röst/sheets, desktop tom/fylld,
+iPad kapaciteter, uppgiftsrader, 320px stor text och felpanel. Revisionerna gav
+mer plats åt composer, korta mobilnamn, dold hopplänk även vid stor text och en
+enda uppgiftsrubrik. Dialogbilder tas efter avslutad övergång. Bilder och JSON
+ligger utanför git i `/workspace/work/ui-final-reviewed/` och `ui-fixtures/`.
+
+Lokala mätningar: navigation 246,8ms, automatiserad inloggning till redo 258ms;
+varm reload FCP 56ms. Fylld DOM 528 element vid 1440×900 med 35 syntetiska
+uppgifter/74 lagrade meddelanden. Ingen CPU-/nätstrypning. JS 305,02kB
+(92,76kB gzip), CSS 25,03kB (5,91kB gzip); inga nya paket. Ingen garanti för
+mobil prestanda. Mobilens pagingankare flyttade -0,5px.
+
+Main `a21a3a9…`, PR #7-head `6abfbb0…` och PR #8-head `81dff79…` verifierade
+oförändrade. Ingen merge, deployment, produktions-/backup-/provider-/ljudåtgärd.
+WebKit saknas. Fysisk Safari, riktigt iPhone-tangentbord, OS-zoom, VoiceOver och
+safe-area-/dialogbeteende återstår efter separat godkänd deployment. Future
+röststatus är enbart designspecifikation; trading/produktutveckling är roadmap.
+
+## UI pass C — 10 november 2026
+
+Voice Focus har egen komposition och tydligt avstängd ljudfunktion. Åtta
+utvecklingstillstånd ligger i en separat fixture-entry; framtida rösttexter
+ingår inte i produktionsbundlen. Fixtures provade i Chromium med noll API-/
+ljudanrop, reduced motion och simulerad hidden-paus. Kapaciteter visar serverns
+faktiska läge och skiljer lokala verktyg från planerade agenter/kunskapskällor.
+Uppgifter är kompakta rader med checkbox, meny, lokal sparstatus och beständig
+felåterhämtning även i sheet. Nested dialoger behåller fokus och stängs var för
+sig. Login är sammanhållen, svensk och kompatibel med lösenordshanterare.
+67 tester, build/typecheck och första hela produktionsbrowserflödet passerar.
+Granskning ledde till lägre röstkomposition på mobil och neutral login vid ett
+första besök. Slutmatris och mått färdigställs i D. Inga backend-/driftändringar.
+
+## UI pass B — 10 november 2026
+
+Command Center har en kompakt tomvy och 36px kärna i aktiva samtal. Historik
+skiljer användartext, uppgiftsresultat och systemnotiser med text, tid och typ.
+Composer har egen verktygsrad, begränsad autohöjd och Enter för radbyte;
+Ctrl/Cmd+Enter skickar, med IME- och repeat-skydd. Exempel fyller endast utkast.
+Samtalsval/alternativ ligger i native dialog/sheet; fel och osäkra resultat
+har beständiga paneler. Mobil använder sidscroll, desktop en historikyta.
+67 tester, typecheck, build och diff-check passerar. Chromium visar inget
+sidledes överflöde eller tomgångsanimation vid 390/1440 px. Browserprov täcker
+utkast, exempel, Enter, Demo utan POST, kompakt kärna och Escape/fokusretur.
+Visuell revision minskade tomvyn så att mobilens composer-info är läsbar ovanför
+bottennavigationen. Ingen ändring i controller/API/server; full matris följer D.
+
+## UI pass A — 10 november 2026
+
+Nytt auktoriserat UI-spår `codex/jarvis-ui-refinement` från PR #8-head
+`81dff79cac693e122e225e6a7afe6a5de9f6f8de`. PR #7/#8 och main verifierade
+oförändrade, ren checkout. [UI_DESIGN](UI_DESIGN.md) beskriver riktning och pass.
+Tokens, systemtypografi, SVG-ikoner och stilla glaskärna implementerade.
+CSS konsoliderad från grunden; inga nya paket eller externa resurser.
+Typecheck, 65 tester, build och diff-check passerar. Renderat/visuellt granskat
+vid 390×844 och 1440×900: inget sidledes överflöde, noll animationer i vila.
+Nästa pass ger historik/composer rätt utrymme och flyttar samtalskontroller till
+en åtkomlig sheet. Nuvarande långa tomvy är ännu inte slutlig design.
+Inga server-/schema-/provider-/produktionsändringar.
 
 ## PRE-INTEGRATION READY — slutleverans 10 november 2026
 

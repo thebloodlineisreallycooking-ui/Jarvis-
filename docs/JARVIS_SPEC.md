@@ -2,6 +2,15 @@
 
 ## Current authorized development scope
 
+UI refinement, separately authorized 10 November 2026, builds on the completed
+PRE-INTEGRATION foundation. Quiet Cinematic Intelligence brings semantic tokens,
+responsive navigation, a restrained core, a multiline composer, task rows,
+dialogs, capability overview and consistent login/recovery states. It changes
+presentation and browser verification, retaining the controller/API contracts.
+See [UI design and evidence](UI_DESIGN.md). Future voice states are isolated
+development fixtures with no audio/permission/provider calls. Draft PR #9 targets
+PR #8; merge and deployment remain outside this authorization.
+
 PRE-INTEGRATION P0–P9, authorized 10 November 2026: extend the existing private
 React/TypeScript/Vite/Express/SQLite app immediately before real GroqCloud and
 Fish Audio integration. Keep owner authentication, cookie sessions, bilingual
@@ -73,10 +82,10 @@ Inbox; confidence engine; digital twin. These are explicitly an idea backlog.
 
 Hermes; Obsidian; knowledge ingestion/RAG; desktop companion; screen recording/
 OCR; arbitrary file search/movement; app/process control; browser/computer control;
-workflow builder; background scheduling; calling; self-improving agents; full UI/
-motion redesign. No such capability is implied by provider preparation.
+workflow builder; background scheduling; calling; self-improving agents.
+No such capability is implied by provider preparation or UI refinement.
 
 Tasks do not grow into projects, deadlines, recurring tasks, tag trees, calendar
 or notifications in this scope. Permanent audio, voice cloning, wake word,
-full duplex and continuous listening are also outside it. The larger visual
-redesign remains around/after the separately authorized provider integration.
+full duplex and continuous listening are also outside it. Future voice integration
+and physical Safari verification require a separate authorized deployment scope.
