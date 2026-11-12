@@ -26,6 +26,16 @@ Fysisk Safari kontrolleras efter separat godkänd deployment.
 historiska. Deras ordinarie konfigurationsvärden beskriver inte det aktuella
 underhållsläget.
 
+
+## Historiska observationer, ingen ny driftavläsning i PR #8
+
+Denna fil behåller de tidigare observationerna. Senaste backupstatus finns i
+[PRODUCTION_BACKUP_STATUS](PRODUCTION_BACKUP_STATUS.md). Ny utveckling med
+schema 3 beskrivs i [PRE_INTEGRATION_REPORT](PRE_INTEGRATION_REPORT.md).
+Det är inte ett produktionsövertagande; befintligt kit och Render-inställningar
+har inte ändrats och en ny versionsanpassad releaseplan krävs separat.
+
+
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 
 Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är

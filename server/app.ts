@@ -1,41 +1,64 @@
-import express from 'express'; import cookieParser from 'cookie-parser'; import helmet from 'helmet'; import { randomBytes, scryptSync, timingSafeEqual, createHash, randomUUID } from 'node:crypto'; import type Database from 'better-sqlite3'; import { commandSchema, credentialsSchema, taskStatusSchema, type Task, type Message } from '../shared/contracts.js';
-const hashToken=(v:string)=>createHash('sha256').update(v).digest('hex');
-const hashPassword=(p:string,s=randomBytes(16).toString('hex'))=>`${s}:${scryptSync(p,s,64).toString('hex')}`;
-const verifyPassword=(p:string,h:string)=>{const [s,key]=h.split(':'); if(!s||!key)return false; return timingSafeEqual(Buffer.from(key,'hex'),scryptSync(p,s,64));};
-type TaskRow = { id: number; title: string; status: string; created_at: string };
-function taskFrom(row:TaskRow):Task{return {id:row.id,title:row.title,status:taskStatusSchema.parse(row.status),createdAt:row.created_at,mode:'live'};}
-export function provisionProductionOwner(db:Database.Database){
- if(process.env.NODE_ENV!=='production')return;
- const parsed=credentialsSchema.safeParse({username:process.env.JARVIS_OWNER_USERNAME,password:process.env.JARVIS_OWNER_PASSWORD});
- if(!parsed.success)throw new Error('Production requires JARVIS_OWNER_USERNAME and a 10–128 character JARVIS_OWNER_PASSWORD');
- const username=parsed.data.username.toLowerCase();
- const accounts=db.prepare('SELECT id,username FROM accounts').all() as {id:number,username:string}[];
- if(accounts.length===0){db.prepare('INSERT INTO accounts(username,password_hash,created_at) VALUES(?,?,?)').run(username,hashPassword(parsed.data.password),new Date().toISOString());return;}
- if(accounts.length!==1||accounts[0]?.username!==username)throw new Error('Production database must contain only the configured owner account');
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import type Database from 'better-sqlite3';
+import { commandSchema, conversationCreateSchema, conversationIdSchema, conversationPatchSchema, idParamSchema,
+  pageQuerySchema, parseTask, requestIdSchema, taskCreateSchema, taskDeleteSchema, taskPatchSchema, taskQuerySchema } from '../shared/contracts.js';
+import { authentication, authRoutes } from './auth.js';
+import { errorHandler, HttpError, input, originGuard, privateHeaders, rateLimit, type SecurityOptions } from './http.js';
+import { getTask, listTasks } from './domain/tasks.js';
+import { history, listConversations, getConversation } from './domain/conversations.js';
+import { createConversation, executeLocal, operationResult, patchConversation } from './domain/operations.js';
+import { providerRoutes } from './providers/chat.js';
+import { unconfiguredProviders, type Providers } from './providers/contracts.js';
+export { provisionProductionOwner } from './auth.js';
+
+export function createApp(db: Database.Database, options: SecurityOptions & { providers?: Providers; providerTimeoutMs?: number } = {}) {
+  const app = express();
+  app.disable('x-powered-by');
+  app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"], objectSrc: ["'none'"], frameAncestors: ["'none'"], upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null } } }));
+  app.use('/api', privateHeaders, originGuard(options));
+  app.use(express.json({ limit: '32kb' }), cookieParser());
+  app.get('/api/health', (_req, res) => { db.prepare('SELECT 1').get(); res.json({ status: 'ok' }); });
+  authRoutes(app, db);
+  app.use('/api', authentication(db));
+  const mutationLimit = rateLimit(120, 60000, (_req, res) => String(res.locals.accountId));
+  app.use('/api', (req, res, next) => ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? next() : mutationLimit(req, res, next));
+  providerRoutes(app, db, options.providers ?? unconfiguredProviders(), options.providerTimeoutMs);
+  app.get('/api/tasks', (req, res) => res.json(listTasks(db, res.locals.accountId, input(taskQuerySchema, req.query))));
+  app.get('/api/tasks/:id', (req, res) => res.json({ task: getTask(db, res.locals.accountId, input(idParamSchema, req.params.id)) }));
+  app.post('/api/tasks', (req, res) => {
+    const data = input(taskCreateSchema, req.body);
+    res.status(201).json(executeLocal(db, res.locals.accountId, { requestId: data.requestId, conversationId: data.conversationId, mode: data.mode, action: { type: 'create', title: data.title } }));
+  });
+  app.patch('/api/tasks/:id', (req, res) => {
+    const data = input(taskPatchSchema, req.body), id = input(idParamSchema, req.params.id);
+    res.json(executeLocal(db, res.locals.accountId, { requestId: data.requestId, conversationId: data.conversationId, mode: data.mode, action: { type: 'patch', id, version: data.version, ...(data.title === undefined ? {} : { title: data.title }), ...(data.status === undefined ? {} : { status: data.status }) } }));
+  });
+  app.delete('/api/tasks/:id', (req, res) => {
+    const data = input(taskDeleteSchema, req.body), id = input(idParamSchema, req.params.id);
+    res.json(executeLocal(db, res.locals.accountId, { ...data, action: { type: 'delete', id, version: data.version } }));
+  });
+  app.get('/api/conversations', (req, res) => {
+    const query = input(pageQuerySchema, req.query);
+    res.json(listConversations(db, res.locals.accountId, query.limit, query.cursor));
+  });
+  app.get('/api/conversations/:id', (req, res) => res.json({ conversation: getConversation(db, res.locals.accountId, input(conversationIdSchema, req.params.id)) }));
+  app.post('/api/conversations', (req, res) => res.status(201).json({ conversation: createConversation(db, res.locals.accountId, input(conversationCreateSchema, req.body)) }));
+  app.patch('/api/conversations/:id', (req, res) => res.json({ conversation: patchConversation(db, res.locals.accountId, input(conversationIdSchema, req.params.id), input(conversationPatchSchema, req.body)) }));
+  app.get('/api/conversations/:id/messages', (req, res) => {
+    const query = input(pageQuerySchema, req.query);
+    res.json(history(db, res.locals.accountId, input(conversationIdSchema, req.params.id), query.limit, query.cursor));
+  });
+  app.post('/api/commands', (req, res) => {
+    const data = input(commandSchema, req.body);
+    // Parse errors belong to request validation, not internal error details.
+    let task: string | null;
+    try { task = parseTask(data.text); } catch { throw new HttpError(400, 'INVALID_TITLE', 'Uppgiftens titel måste vara 1–200 tecken.'); }
+    res.status(201).json(executeLocal(db, res.locals.accountId, { ...data, action: task ? { type: 'create', title: task } : { type: 'text' } }));
+  });
+  app.get('/api/operations/:id', (req, res) => res.json(operationResult(db, res.locals.accountId, input(requestIdSchema, req.params.id))));
+  app.use('/api', (_req, res) => res.status(404).json({ code: 'NOT_FOUND', error: 'Not found' }));
+  app.use(errorHandler);
+  return app;
 }
-export function createApp(db:Database.Database){const app=express(); app.disable('x-powered-by'); app.use(helmet({contentSecurityPolicy:false})); app.use(express.json({limit:'32kb'})); app.use(cookieParser());
- app.get('/api/health',(_req,res)=>{db.prepare('SELECT 1').get();res.json({status:'ok'});});
- const auth=(req:express.Request,res:express.Response,next:express.NextFunction)=>{const token=req.cookies['jarvis_session']; if(!token)return res.status(401).json({error:'Authentication required'}); const row=db.prepare("SELECT account_id FROM sessions WHERE token_hash=? AND expires_at>?").get(hashToken(token),new Date().toISOString()) as {account_id:number}|undefined; if(!row)return res.status(401).json({error:'Session expired'}); res.locals.accountId=row.account_id; next();};
- app.post('/api/auth/register',(req,res)=>{if(process.env.NODE_ENV==='production')return res.status(404).json({error:'Not found'});const parsed=credentialsSchema.safeParse(req.body); if(!parsed.success)return res.status(400).json({error:'Username or password is invalid'}); try{const info=db.prepare('INSERT INTO accounts(username,password_hash,created_at) VALUES(?,?,?)').run(parsed.data.username.toLowerCase(),hashPassword(parsed.data.password),new Date().toISOString()); issueSession(Number(info.lastInsertRowid),res); res.status(201).json({username:parsed.data.username.toLowerCase()});}catch{return res.status(409).json({error:'Account already exists'});}});
- app.post('/api/auth/login',(req,res)=>{const parsed=credentialsSchema.safeParse(req.body); if(!parsed.success)return res.status(400).json({error:'Username or password is invalid'}); const row=db.prepare('SELECT id,password_hash FROM accounts WHERE username=?').get(parsed.data.username.toLowerCase()) as {id:number,password_hash:string}|undefined; if(!row||!verifyPassword(parsed.data.password,row.password_hash))return res.status(401).json({error:'Invalid credentials'}); issueSession(row.id,res); res.json({username:parsed.data.username.toLowerCase()});});
- function issueSession(accountId:number,res:express.Response){const token=randomBytes(32).toString('base64url'); const expires=new Date(Date.now()+7*86400000); db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hashToken(token),accountId,expires.toISOString()); res.cookie('jarvis_session',token,{httpOnly:true,sameSite:'strict',secure:process.env.NODE_ENV==='production',expires,path:'/'});}
- app.post('/api/auth/logout',auth,(req,res)=>{const token=req.cookies['jarvis_session']; db.prepare('DELETE FROM sessions WHERE token_hash=?').run(hashToken(token)); res.clearCookie('jarvis_session',{path:'/'}); res.status(204).end();});
- app.get('/api/tasks',auth,(_req,res)=>{const rows=db.prepare('SELECT * FROM tasks WHERE account_id=? ORDER BY id DESC').all(res.locals.accountId) as TaskRow[];res.json({tasks:rows.map(taskFrom)});});
- app.get('/api/messages',auth,(_req,res)=>{res.json({messages:conversationRows(db,res.locals.accountId)});});
- app.post('/api/commands',auth,(req,res)=>{const parsed=commandSchema.safeParse(req.body);if(!parsed.success)return res.status(400).json({error:'Enter a command of 1–300 characters and a valid mode'}); const title=parseTask(parsed.data.text);if(!title)return res.status(422).json({error:'Try “Add a task to review JARVIS” or “Lägg till en uppgift att granska JARVIS”.'}); const now=new Date().toISOString();if(parsed.data.mode==='demo'){const task:Task={id:0,title,status:'open',createdAt:now,mode:'demo'};return res.json({task,persisted:false,messages:conversation(parsed.data.text,task,now)});} const save=db.transaction(()=>{
-   const info=db.prepare('INSERT INTO tasks(account_id,title,created_at) VALUES(?,?,?)').run(res.locals.accountId,title,now);
-   const task:Task={id:Number(info.lastInsertRowid),title,status:'open',createdAt:now,mode:'live'};
-   const messages=conversation(parsed.data.text,task,now);
-   const insert=db.prepare('INSERT INTO messages(id,account_id,role,body,mode,created_at) VALUES(?,?,?,?,?,?)');
-   for(const message of messages) insert.run(message.id,res.locals.accountId,message.role,message.text,'live',message.createdAt);
-   return {task,persisted:true,messages};
- });res.status(201).json(save());});
- app.use((error:unknown,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
-   const status=typeof error==='object' && error!==null && 'status' in error ? error.status : undefined;
-   if(status===400 || status===413) {res.status(status).json({error:status===400?'Invalid JSON request.':'Request is too large.'});return;}
-   res.status(500).json({error:'The server could not complete the request. Please try again.'});
- });
- return app;}
-function parseTask(text:string){const patterns=[/^add (?:a )?task(?: to)?\s+(.+)$/i,/^lägg till (?:en )?uppgift(?: att)?\s+(.+)$/i];for(const p of patterns){const m=text.trim().match(p);if(m?.[1])return m[1].trim().slice(0,200);}return null;}
-function conversation(input:string,task:Task,at:string):Message[]{return[{id:randomUUID(),role:'user',text:input,createdAt:at,mode:task.mode},{id:randomUUID(),role:'assistant',text:`Task added: ${task.title}${task.mode==='demo'?' (Demo only — not saved)':''}`,createdAt:at,mode:task.mode}];}
-function conversationRows(db:Database.Database,accountId:number):Message[]{return (db.prepare('SELECT id,role,body,mode,created_at FROM messages WHERE account_id=? ORDER BY sequence').all(accountId) as {id:string;role:Message['role'];body:string;mode:Message['mode'];created_at:string}[]).map(r=>({id:r.id,role:r.role,text:r.body,mode:r.mode,createdAt:r.created_at}));}

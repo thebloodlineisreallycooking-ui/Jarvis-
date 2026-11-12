@@ -1,6 +1,18 @@
 # Etapp 1 — körplan för backup, release och återställning
 
 ## Aktuell kontrollpunkt 10 november 2026 — backup klar, stopp före release
+## Schema 3 ingår inte i denna produktionskörplan
+
+Utvecklings-PR #8, 10 november 2026, tillför schema 3. Den här körplanens
+revisionslås och installerade kit gäller den historiska Etapp 1-releasen;
+de får inte återanvändas som godkännande eller komplett körplan för schema 3.
+Kitet lämnas oförändrat och avvisar schema-3-capture. Se
+[kompatibilitet och återställningsövning](PRE_INTEGRATION_REPORT.md).
+En framtida samlad release behöver en separat versionsanpassad driftplan,
+aktuell verifierad backup på båda målen och separat godkännande. Ingen merge,
+deployment, migrering eller återställning utförs genom utvecklingsuppdraget.
+
+
 
 Steg 1–5 för det godkända backupuppdraget är slutförda. Render-kopian och den
 separata iSH-kopian är verifierade: schema 1, 36864 byte och matchande SHA-256.

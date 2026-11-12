@@ -40,6 +40,10 @@ try {
   symlinkSync(join(repo, 'node_modules'), join(directory, 'old-source/node_modules'), 'dir');
   const { migrate: oldMigrate } = await import(pathToFileURL(join(directory, 'old-source/server/db/migrations.ts')).href);
   const { createApp: oldApp } = await import(pathToFileURL(join(directory, 'old-source/server/app.ts')).href);
+  // A real original-kit backup must remain verifiable by the updated kit.
+  const originalKit = join(directory, 'old-kit-database.mjs');
+  writeFileSync(originalKit, execFileSync('git', ['show', 'dade9b6c16df3e0ec61484e0ff10dd558744d695:scripts/ops/database.mjs'], { cwd: repo }));
+  const { createBackup: originalBackup } = await import(pathToFileURL(originalKit).href);
   const config = configuration(directory, base);
   // This executor restricts other processes' /proc entries even for root.
   // The fixture points to the real test process, which owns every live test DB.
@@ -66,7 +70,8 @@ try {
   // No import of application startup/migrate on the backup source connection.
   // Use the production backup implementation, without its maintenance guard,
   // to retain the original rehearsal of committed WAL data in an open source.
-  const walBackup = await createBackup(config, Database);
+  const walBackup = await originalBackup(config, Database);
+  assert.equal((await verifyBackup(config, Database, walBackup.id)).manifest.schema, 1);
   const backupPath = join(config.backups, walBackup.id, 'snapshot.db');
   const backup = track(new Database(backupPath, { readonly: true, fileMustExist: true }));
   check(backup);
@@ -94,6 +99,7 @@ try {
   const stoppedBackup = await operation(config.controlFile, 'backup', undefined, SERVICE_ID);
   assert.equal((await operation(config.controlFile, 'verify', stoppedBackup.id, SERVICE_ID)).verified, true);
   assert.equal((await operation(config.controlFile, 'status')).applicationStarted, false);
+  assert.equal((await operation(config.controlFile, 'status')).operationsVersion, 'schema3-capture-v1');
   assert.equal(statSync(backupPath).mode & 0o777, 0o400);
   await assert.rejects(verifyBackup(config, Database, '../outside'), /Invalid backup ID/);
   await assert.rejects(createBackup(config, Database, { expectedOwner: 'not_the_owner' }), /owner does not match/);
@@ -108,11 +114,12 @@ try {
   chmodSync(candidatePath, 0o600);
   const candidate = track(openDatabase(candidatePath));
   check(candidate);
-  for (const table of ['accounts', 'sessions', 'tasks']) {
+  for (const table of ['accounts', 'sessions']) {
     assert.deepEqual(candidate.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all(), before[table]);
   }
+  assert.deepEqual(candidate.prepare('SELECT id,account_id,title,status,created_at FROM tasks ORDER BY id').all(), before.tasks);
   assert.deepEqual(candidate.prepare('SELECT id,account_id,role,body,mode,created_at FROM messages ORDER BY sequence').all(), before.messages);
-  assert.equal(candidate.prepare('SELECT MAX(version) FROM schema_migrations').pluck().get(), 2);
+  assert.equal(candidate.prepare('SELECT MAX(version) FROM schema_migrations').pluck().get(), 3);
   const incompatible = request.agent(oldApp(candidate));
   await incompatible.post('/api/auth/login').send({ username: 'recovery_alice', password }).expect(200);
   await incompatible.get('/api/health').expect(200); // Health alone misses this failure.
@@ -120,15 +127,56 @@ try {
   const failed = await incompatible.post('/api/commands').send({ text: 'Add a task to expose old code incompatibility', mode: 'live' }).expect(500);
   assert.ok(failed.text.length > 0);
   assert.deepEqual(snapshot(candidate), beforeFailure, 'Failed old-code command rolls its task transaction back');
-  assert.throws(() => candidate.prepare('INSERT INTO messages VALUES(?,?,?,?,?,?)'), /7 columns but 6 values/);
-  console.log('PASS: migration preserves rows; actual old server has healthy GET but fails Live writes on schema 2');
+  assert.throws(() => candidate.prepare('INSERT INTO messages VALUES(?,?,?,?,?,?)'), /11 columns but 6 values/);
+  console.log('PASS: migration preserves rows; actual old server has healthy GET but fails Live writes on schema 3');
 
-  const upgraded = request.agent(createApp(candidate));
+  const upgraded = request.agent(createApp(candidate, { allowOriginlessLoopback: true }));
   await upgraded.post('/api/auth/login').send({ username: 'recovery_alice', password }).expect(200);
-  const added = await upgraded.post('/api/commands').send({ text: 'Add a task to represent a post-backup write', mode: 'live' }).expect(201);
+  const conversationId = (await upgraded.get('/api/conversations')).body.conversations[0].id;
+  const added = await upgraded.post('/api/commands').send({ requestId: randomUUID(), conversationId, text: 'Add a task to represent a post-backup write', mode: 'live' }).expect(201);
   assert.deepEqual(added.body.messages.map(message => message.role), ['user', 'assistant']);
+  await upgraded.patch(`/api/tasks/${added.body.task.id}`).send({ requestId: randomUUID(), conversationId,
+    mode: 'live', version: added.body.task.version, status: 'completed' }).expect(200);
+  await upgraded.patch(`/api/conversations/${conversationId}`).send({ requestId: randomUUID(),
+    version: 1, status: 'archived' }).expect(200);
+  await assert.rejects(createBackup(config, Database), /Release preflight failed/);
+  // Reject future, incomplete and unexpected layouts instead of silently dropping
+  // tables from a manifest. Commit each synthetic fault so the backup's separate
+  // read connection can see it, then restore the exact supported layout.
+  const migration2Time = candidate.prepare('SELECT applied_at FROM schema_migrations WHERE version=2').pluck().get();
+  for (const [sql, undo] of [
+    ["INSERT INTO schema_migrations VALUES(4,'synthetic')", () => candidate.exec('DELETE FROM schema_migrations WHERE version=4')],
+    ['DELETE FROM schema_migrations WHERE version=2', () => candidate.prepare('INSERT INTO schema_migrations VALUES(2,?)').run(migration2Time)],
+    ['CREATE TABLE unsupported_table(value TEXT)', () => candidate.exec('DROP TABLE unsupported_table')]
+  ]) {
+    candidate.exec(sql);
+    try { await assert.rejects(createBackup(config, Database, { release: false }), /Unexpected database (schema|tables)/); }
+    finally { undo(); }
+  }
+  await assert.rejects(operation(config.controlFile, 'capture', undefined, SERVICE_ID), /database open/);
+  const schema3Tables = ['accounts', 'sessions', 'tasks', 'messages', 'schema_migrations', 'conversations', 'operations'];
+  const schema3Rows = Object.fromEntries(schema3Tables.map(table => [table, candidate.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()]));
   const migratedRows = candidate.prepare('SELECT sequence,id FROM messages ORDER BY sequence').all();
   candidate.close();
+  await maintenance.close();
+  const schema3Config = { ...config, commit: '1'.repeat(40) };
+  maintenance = await startMaintenance(schema3Config, { port: 0, Database });
+  await assert.rejects(operation(config.controlFile, 'backup', undefined, SERVICE_ID), /known old commit/);
+  const capture = await operation(config.controlFile, 'capture', undefined, SERVICE_ID);
+  assert.equal(capture.schema, 3);
+  const captured = await verifyBackup(config, Database, capture.id);
+  assert.equal(captured.manifest.sourceCommit, schema3Config.commit);
+  assert.equal(captured.manifest.unsupportedStatuses, 0);
+  assert.deepEqual(Object.keys(captured.manifest.counts), schema3Tables);
+  const capturedDb = track(new Database(captured.path, { readonly: true, fileMustExist: true }));
+  for (const table of schema3Tables) assert.deepEqual(capturedDb.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all(), schema3Rows[table]);
+  capturedDb.close();
+  const beforeRejectedRestore = hash(candidatePath);
+  await assert.rejects(operation(config.controlFile, 'restore', capture.id, SERVICE_ID), /schema-1 baseline/);
+  assert.equal(hash(candidatePath), beforeRejectedRestore);
+  assert.equal((await operation(config.controlFile, 'status')).restorePending, false);
+  assert.equal((await operation(config.controlFile, 'verify', capture.id, SERVICE_ID)).verified, true);
+  console.log('PASS: schema-3 capture preserves seven tables, completed tasks, archived conversations and durable receipts; unsupported layouts/restore targets fail closed');
   const reopened = track(openDatabase(candidatePath));
   assert.deepEqual(reopened.prepare('SELECT sequence,id FROM messages ORDER BY sequence').all(), migratedRows);
   reopened.close();
@@ -139,7 +187,7 @@ try {
     const db = new Database(process.argv[1]);
     db.pragma('journal_mode = WAL');
     db.pragma('wal_autocheckpoint = 0');
-    db.prepare("INSERT INTO tasks(account_id,title,status,created_at) VALUES(1,'synthetic crash write','open','2026-10-14T00:00:00.000Z')").run();
+    db.prepare("INSERT INTO tasks(account_id,title,status,created_at,updated_at) VALUES(1,'synthetic crash write','open','2026-11-10T00:00:00.000Z','2026-11-10T00:00:00.000Z')").run();
     process.exit(0);
   `, candidatePath], { cwd: repo });
   assert.ok(statSync(candidatePath + '-wal').size > 0);

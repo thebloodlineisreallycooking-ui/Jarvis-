@@ -26,6 +26,18 @@ Fysisk Safari kontrolleras efter separat godkänd deployment.
 historiska. Deras ordinarie konfigurationsvärden beskriver inte det aktuella
 underhållsläget.
 
+
+## Nytt utvecklingsspår — 10 november 2026
+
+PR #8 förbereder PRE-INTEGRATION ovanpå den frysta PR #7. Aktuell lokal
+installation, API, schema 3, gränser och testkommandon finns i
+[PRE_INTEGRATION_REPORT](PRE_INTEGRATION_REPORT.md). Provider-/enhetsarbetet
+finns i [överlämningen](PROVIDER_HANDOFF.md). Nedanstående Etapp 1-avsnitt är
+historik; deras open-only-taskmodell och tidigare återförsöksråd beskriver inte
+den nya utvecklingsbranchen. Inga Render-inställningar har ändrats här.
+Läs senaste [backupstatus](PRODUCTION_BACKUP_STATUS.md) före driftarbete.
+
+
 ## Åtkomstkontroll 22 oktober 2026 — aktuell status
 
 Denna status ersätter tidigare öppna åtkomstpunkter nedan. Underlaget är

@@ -1,5 +1,30 @@
 # Progress
 
+## Schema-3-driftkit förberett — 11 november 2026
+
+Ny lokal verktygsversion `schema3-capture-v1` bevarar samtliga sju tabeller
+vid capture av schema 3 och redovisar sin version i status. Originalkitets
+schema-1-manifest kan fortfarande verifieras och återställas. Backupens
+releasegrind är fortsatt låst till den gamla kodrevisionen och schema 1;
+restore accepterar endast samma baseline. Framtida/ofullständiga scheman och
+okända tabeller avvisas. Ingen produktionsinstallation har gjorts.
+
+Den återanvända syntetiska återställningsövningen passerar: gammalt WAL-kit,
+schema 1→3, sju tabeller inklusive completed/archived/operations, avvisat
+schema-3-restoremål utan databasändring, avbruten karantän/installation,
+återupptagning under underhåll och gamla kodens isolerade skrivningar efter
+återställning. Produktionsdata används inte. En utökad releasekörplan följer
+med exakt kitrevision/checksummor och bibehållen separat deploygräns.
+
+## PR-kedjans dokumentation sammanförd — 11 november 2026
+
+PR #7:s verifierade backupstatus från `9bdf51a` har sammanförts med PR #8.
+Konflikterna berörde endast dokumentation; både backupresultatet och tidigare
+utvecklingsverifiering bevaras. Merge till main är nu uttryckligen godkänd av
+ägaren efter granskning. Deployment och återöppning ingår inte. Förberedelse av
+schema-3-återställningsplan pågår. Render har fortfarande auto-deploy Off och
+startar det installerade underhållsprogrammet enligt ny läsavläsning.
+
 ## Produktionsbackup slutförd och verifierad på båda målen — 10 november 2026
 
 Separat iSH-kopia är nu överförd och verifierad: snapshot.db 36864 byte,
@@ -22,6 +47,109 @@ täcks inte av Etapp 1-kitet. Endast sanerad dokumentation ändras här;
 diffkontroll görs och full testsvit upprepas inte.
 
 Äldre kontrollpunkter nedan är historiska; deras öppna backuppunkter är nu lösta.
+
+
+## PRE-INTEGRATION READY — slutleverans 10 november 2026
+
+Senaste verifierade kodcommit på GitHub:
+`c6794bda7406ea5873d0fe0b95ac7dd4f32bf421` på
+`codex/pre-groq-fish-foundation`, [draft-PR #8](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/8).
+PR-bas är den oförändrade #7-branchen/head `6abfbb0…`; main `a21a3a9…`
+är också oförändrad. Denna efterföljande commit ändrar bara dokumentation.
+
+P0–P9 är klara enligt [slutmatrisen](PRE_INTEGRATION_PLAN.md).
+[Rapporten](PRE_INTEGRATION_REPORT.md) innehåller API/datamodell, exakt filista,
+kod↔schema-tabell, återställningsgränser och fulla testkommandon. Typecheck,
+**65 tester i 6 filer**, build och diff-check passerar. Slutlig ren
+produktionsinstallation/pruning/start passerar. Syntetisk migration/rollback/
+återställning passerar med oförändrat driftkit; schema-3-capture avvisas.
+
+Sista browserkörningen på kodcheckpointen passerar: Chromium 154.0.8037.57,
+Playwright 1.62.1, **36 layoutfall**, inga runtimefel, noll mikrofon-/TTS-anrop.
+Urval av 320px/200%-text, 390px Command Center, 820px uppgiftslista och dialog
+granskat visuellt. WebKit-binär saknas. Detta bevisar inte fysisk Safari,
+verkligt tangentbord, audioformat eller riktiga provideranrop.
+
+**Tre separata statusar:** PRE-INTEGRATION READY; produktionsbackupens privata
+kopia/hash/slutverifiering/exakta tid återstår; release fortsatt stoppad.
+Ingen ny Render-avläsning eller produktionsåtgärd utförd. Nästa konkreta
+uppdrag är [provideröverlämningen](PROVIDER_HANDOFF.md), efter separat
+avgränsning: säkra servercredentials, aktuella modell-/voice-ID:n, verklig
+Groq-chat/transkription, Fish-talsyntes, kontrollerade providerprov och fysisk
+Safari. Ingen automatisk fortsättning, merge eller deployment.
+
+## PRE-INTEGRATION — slutlig kodcheckpoint 10 november 2026
+
+P1–P8 är implementerade. Typecheck, **65 tester i 6 filer**, build och
+diff-check passerar. De nya testerna omfattar även avvisade svar från fel
+läge/samtal. Ren produktionsinstallation/start och syntetisk recovery har
+passerat; ingen produktionsdatabas har öppnats.
+
+Hela browserflödet passerade i Chromium 154.0.8037.57: tre vyer, tomt/fyllt,
+320/390/430/820 px, 200 procent text, 360 px höjd, uppgiftslivscykel,
+dialog-/returfokus, scrollankare, tråd-/lägesbyten, tappat svar/samma-ID-retry,
+Demo utan skrivningar, logout/401/503 och reducerad rörelse. Provningen hittade
+och åtgärdade select-etikett, dialogens Tab-loop och composerbredd vid stor text.
+Sista klientvalideringen verifieras också i en ny browserkörning före rapporten.
+
+WebKit-binären saknas; fysisk Safari och verkliga provider-/ljudprov ingår i
+nästa separata uppdrag. Provideröverlämningen beskriver exakta kvarvarande prov.
+Nästa steg är slutlig kravmatris/rapport och verifiering av ny GitHub-head i
+draft-PR #8. PR #7, main, Render, driftkit och produktionsbackup är orörda.
+
+## PRE-INTEGRATION P7–P8 och driftövning — 10 november 2026
+
+Verifierad GitHub-checkpoint för P1–P6:
+`45dff7ee37a75b5136fc216559253bec3a0cf484` på utvecklingsbranchen/PR #8.
+ChatProvider, TranscriptionProvider och SpeechProvider används nu i testade
+flöden. Standardfactory är avstängd, capability autentiserad, SSE har ordnade
+identitetsbundna händelser, budget/tidsgräns/avbrott och beständiga slutresultat.
+Testprovider injiceras endast av testharness. Inga riktiga leverantörsanrop.
+Ljudmetadata och ren tillståndsmaskin är testade med syntetiska bytes;
+mikrofon/uppspelning/uppladdning är inte aktiverade i UI.
+
+Lokalt: typecheck, **61 tester**, build och diff-check passerar. Ren
+`NODE_ENV=production`-installation, bygge, dev-pruning, verklig serverstart,
+inloggning/cookies, uppgiftslivscykel, omstarter och replay passerar.
+Syntetisk schema-1→3-migration/återställning passerar med oförändrat driftkit.
+Kitet avvisar schema-3-capture; detta bevisar behovet av en ny driftplan före
+framtida release, inte att produktionsarbete är godkänt.
+
+Browsergranskning pågår i Chromium 154.0.8037.57 / Playwright 1.62.1.
+Tomma tre vyer vid 320/390/430/820 passerade måttkontroller. Ett namnproblem
+för select-etiketten hittades och korrigeras innan hela flödet körs klart.
+WebKits förväntade körbara fil saknas; fysisk Safari och verkligt ljud/provider
+hör fortsatt till senare separat uppdrag. Nästa steg: färdiga browserprov,
+slutlig kravmatris/API-/schemaöversikt och provideröverlämning.
+
+## PRE-INTEGRATION P1–P6 — verifierad kodcheckpoint 10 november 2026
+
+Draft-PR [#8](https://github.com/thebloodlineisreallycooking-ui/Jarvis-/pull/8)
+är skapad mot PR #7:s branch. Första GitHub-checkpoint:
+`77a4e381287a644ad0321f14f33b9fe808d8ba36`.
+
+Ny migration 3 bevarar legacyfält och sekvenser, lägger till uppgiftsversioner,
+slutförande, samtal och konto-/payloadbundna operationer. Uppgiftslivscykel,
+CAS-konflikter, fysiska raderingar med bevarad historik, beständig replay efter
+omstart/radering, atomiska skrivningar och cursorisolering är testade.
+Klienten har separata trådar/utkast, Demo helt i minnet, manuella återförsök,
+nya tillgängliga task-/samtalskontroller och bibehållet sessionsskydd.
+Origin, no-store, login-/mutationsgränser och sanerade fel ingår.
+
+Lokalt: typecheck, **39 tester**, build och diff-check passerar. Nya UI-flöden
+har ännu inte browserverifierats. Provider-/ljudgränser och slutlig
+produktionsstart-/återställningsövning återstår. Nästa konkreta uppgift är
+testprovider, SSE och ljudtillstånd. Ingen Render-åtgärd, mikrofon eller riktig
+provider har använts; produktion och backupkit är oförändrade.
+
+## PRE-INTEGRATION P0 — 10 november 2026
+
+Ny utvecklingsbranch från verifierad PR #7-head `6abfbb0572f526fa9ad7c52f429c74ea2c1226ff`.
+PR #7 är öppen/draft/omergad och förblir fryst. GitHub-läsning och separat
+branchskrivning bekräftade. Baslinjens typecheck, 31 tester, build och diff-check
+passerar. Se [plan och kravmatris](PRE_INTEGRATION_PLAN.md) för omfattning,
+fortsättningspunkt och separata utvecklings-/backup-/releasestatusar.
+Ingen Render-avläsning eller produktionsåtgärd i detta uppdrag.
 
 ## Produktionsbackup skapad på Render — 9 november 2026
 
