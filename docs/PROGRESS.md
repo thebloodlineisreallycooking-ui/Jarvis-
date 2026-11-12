@@ -1,5 +1,30 @@
 # Progress
 
+## Mergeförberedelser klara — 12 november 2026
+
+Samlad kod `64aad39e4d515f4de8c45c97a3112fa3e4b3a8b4` är sparad på GitHub.
+Nytt versionslåst driftkit `3c8c7110a9d58200ad0333dc0278e5374355cb0a` stödjer
+schema-3-capture; baseline-restore förblir schema 1. [Ny körplan](SCHEMA_3_RELEASE_RUNBOOK.md)
+anger exakta SHA:n, tre filchecksummor, startgrind, aktualitetskontroll,
+deploy/acceptans, dataeffekter och konkret rollback utan appstart under restore.
+
+Ny verifiering: typecheck, 67 tester/7 filer, build, diff-check, syntetisk
+WAL/migration/avbruten restore/omstart samt ren production-installation och
+faktisk serverstart efter borttagna dev-beroenden passerar. App/UI-koden är
+oförändrad mot PR #9; 54 browserfall och 36 kontrastpar är tidigare verifiering.
+UI-proven upprepas inte för enbart ops-/dokumentändringar. Den 12 november
+passerade även körplanens shell-/Node-syntax, baselinekontroll inklusive
+avvisad källändring och intern API-acceptans med syntetiska lokala data.
+
+Render läst 12 november: auto-deploy Off, underhåll på, gamla underhållsstarten,
+aktiv `a21a3a9...`, ingen pågående/köad deploy i senaste listan. Blueprint
+Auto Sync No är tidigare ägarbekräftat. Backup på båda mål är klar; inga nya
+iSH-steg. Ägaren har godkänt mergekedjan #7→#8→#9. Mergestatus ska verifieras
+separat på GitHub; ingen produktionsåtgärd ingår i denna kontrollpunkt.
+
+Nästa steg för produktionsgrunden är separat godkänd deploy och fysisk Safari.
+Ingen ny bred feature-etapp behövs före den avgränsade providerintegrationen.
+
 ## Samlad releasekandidat PR #7–9 — 11 november 2026
 
 UI-branchens kod har sammanförts med den verifierade backupdokumentationen

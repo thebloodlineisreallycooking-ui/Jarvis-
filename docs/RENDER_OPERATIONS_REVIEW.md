@@ -1,5 +1,17 @@
 # Etapp 1 — Render-granskning och återställningsplan
 
+## Uppdatering 12 november 2026
+
+Ny readonly connectorgranskning: samma tjänst/repo, main, auto-deploy Off,
+Maintenance Mode på, gammalt kit som Start Command, build/health/disk oförändrade.
+Live `dep-dbdnalcs728c73cic4qg` använder `a21a3a9...`; senaste deploylistan har
+ingen pågående/köad deploy. Auto Sync No är tidigare ägarbekräftat.
+Backup på båda mål är färdig. Nytt schema-3-kit och samlad kandidat är sparade
+på GitHub och lokalt verifierade; [aktuell körplan](SCHEMA_3_RELEASE_RUNBOOK.md)
+håller merge åtskild från ännu ej godkända produktionsåtgärder. Inga gamla
+loggrader krävs på nytt som releasegrind; användartillhandahållet byggfel nedan
+behålls som historiskt underlag.
+
 ## Aktuell driftstatus 10 november 2026 — backup klar
 
 Backupuppdraget är slutfört med verifierad Render-kopia och separat privat

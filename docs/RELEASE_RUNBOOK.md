@@ -1,5 +1,13 @@
 # Etapp 1 — körplan för backup, release och återställning
 
+## Nyare körplan — 12 november 2026
+
+För samlad PR #7–9/schema 3 gäller [SCHEMA_3_RELEASE_RUNBOOK](SCHEMA_3_RELEASE_RUNBOOK.md).
+Merge är nu godkänd, men produktion är fortsatt i underhåll och deployment,
+migration, restore och återöppning kräver separat beslut. Backupen är färdig.
+Nedanstående Etapp-1-/schema-2-körplan och behörighetsstatus är historik.
+Det nya schema-3-kitet är sparat och testat, inte installerat i produktion.
+
 ## Aktuell kontrollpunkt 10 november 2026 — backup klar, stopp före release
 ## Schema 3 ingår inte i denna produktionskörplan
 

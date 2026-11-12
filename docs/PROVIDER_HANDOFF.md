@@ -1,5 +1,15 @@
 # Provideröverlämning — stopp före verklig integration
 
+## Aktualisering 12 november 2026
+
+Backupuppdraget är färdigt på Render och iPhone. [Samlad schema-3-körplan](SCHEMA_3_RELEASE_RUNBOOK.md)
+är förberedd med testat nytt driftkit; det är ännu inte installerat i produktion.
+Merge är godkänd separat. Deployment/återöppning och fysisk Safari återstår före
+produktionsgrunden kan godkännas. Ingen ytterligare bred funktion-/UI-etapp krävs.
+Nedanstående providergränser är fortfarande avstängda; verkliga adaptrar,
+credentials, kostnadskontroll, ljuddecoder/format och enhetsprov är nästa
+separat avgränsade integrationsuppdrag, inte del av mergeuppdraget.
+
 Denna branch förbereder GroqCloud för chat/transkription och Fish Audio för
 text till ljud. Detta är projektets planerade fördelning, inte ett påstående
 att leverantörerna saknar andra funktioner. **Inga riktiga anrop, nycklar,

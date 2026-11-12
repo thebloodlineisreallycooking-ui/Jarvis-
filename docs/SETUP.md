@@ -1,5 +1,13 @@
 # Setup and existing Render service
 
+## Samlad release efter PR #7–9
+
+Aktuell versionslåst produktionsplan: [SCHEMA_3_RELEASE_RUNBOOK](SCHEMA_3_RELEASE_RUNBOOK.md).
+Backupen på Render/iPhone är slutförd. Nytt kit stödjer schema 3 men är inte
+installerat. Behåll underhåll, Auto Sync No och auto-deploy Off tills separat
+releasebeslut. Kör inte `npm start` i produktion som en setupkontroll: det migrerar.
+Äldre daterade uppgifter nedan är historik, inte nuvarande releasebeslut.
+
 ## Aktuell driftstatus 10 november 2026 — backup klar
 
 Backupuppdraget är slutfört med verifierad Render-kopia och separat privat
